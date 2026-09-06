@@ -79,17 +79,20 @@ export function refineHeroBuildings(groups:Map<string,T.Group>){
    const glass=curtain();glass.map=null;glass.color.set('#7199ae');glass.metalness=.6;glass.roughness=.21;
    const frame=new T.MeshStandardMaterial({color:'#c1cbd0',metalness:.72,roughness:.28});
    const sideGlass=glass.clone();sideGlass.color.set('#a5bbc4');sideGlass.emissiveMap=null;glow.push({material:sideGlass,strength:.12});
-   const shape=new T.Shape();shape.moveTo(-w/2,0);shape.lineTo(w/2,0);shape.lineTo(w*.32,h);shape.lineTo(-w*.32,h);shape.closePath();
+   const halfWidth=(y:number)=>w*(.5-.18*Math.pow(y/h,1.6));const depthAt=(y:number)=>d/2*(1-.62*Math.pow(y/h,1.35));
+   const shape=new T.Shape();shape.moveTo(-w/2,0);shape.lineTo(w/2,0);for(let j=1;j<=100;j++)shape.lineTo(halfWidth(j*h/100),j*h/100);for(let j=100;j>=0;j--)shape.lineTo(-halfWidth(j*h/100),j*h/100);shape.closePath();
    const opening=new T.Path();opening.moveTo(-w*.23,h-14);opening.lineTo(-w*.265,h-3);opening.lineTo(w*.265,h-3);opening.lineTo(w*.23,h-14);opening.closePath();shape.holes.push(opening);
-   const geo=new T.ExtrudeGeometry(shape,{depth:d,bevelEnabled:false});geo.translate(0,0,-d/2);const positions=geo.attributes.position;for(let i=0;i<positions.count;i++)positions.setZ(i,positions.getZ(i)*(1-.62*positions.getY(i)/h));geo.computeVertexNormals();const uv=geo.attributes.uv;for(let i=0;i<uv.count;i++)uv.setXY(i,uv.getX(i)/w,uv.getY(i)/h);g.add(new T.Mesh(geo,[glass,sideGlass]));
-   const faceZ=(y:number,side:number)=>side*(d/2*(1-.62*y/h)+.025);
+   const geo=new T.ExtrudeGeometry(shape,{depth:d,steps:32,bevelEnabled:false});geo.translate(0,0,-d/2);const positions=geo.attributes.position;for(let i=0;i<positions.count;i++)positions.setZ(i,positions.getZ(i)*(1-.62*Math.pow(positions.getY(i)/h,1.35)));geo.computeVertexNormals();const uv=geo.attributes.uv;for(let i=0;i<uv.count;i++)uv.setXY(i,uv.getX(i)/w,uv.getY(i)/h);g.add(new T.Mesh(geo,[glass,sideGlass]));
+   const faceZ=(y:number,side:number)=>side*(depthAt(y)+.025);
    for(const side of [-1,1]){
-    for(let floor=1;floor<101;floor++){const y=floor*h/101,width=w*(1-.36*y/h),z=faceZ(y,side);if(y>h-14&&y<h-3){const halfHole=w*(.23+.035*(y-(h-14))/11);const length=width/2-halfHole;for(const sign of [-1,1])box(g,sign*(halfHole+length/2),y,z,length,.025,.03,frame)}else box(g,0,y,z,width,.025,.03,frame)}
-    for(let i=-18;i<=18;i++){const x=i*w/38,top=Math.min(h-14,h*(.5-Math.abs(x)/w)/.18);if(top>0)tube(g,[new T.Vector3(x,.2,faceZ(.2,side)),new T.Vector3(x,top,faceZ(top,side))],.009,frame)}
+    for(let floor=1;floor<101;floor++){const y=floor*h/101,width=halfWidth(y)*2,z=faceZ(y,side);if(y>h-14&&y<h-3){const halfHole=w*(.23+.035*(y-(h-14))/11);const length=width/2-halfHole;for(const sign of [-1,1])box(g,sign*(halfHole+length/2),y,z,length,.025,.03,frame)}else box(g,0,y,z,width,.025,.03,frame)}
+    for(let i=-18;i<=18;i++){const x=i*w/38,top=Math.min(h-14,h*Math.pow((.5-Math.abs(x)/w)/.18,1/1.6));if(top>0)tube(g,Array.from({length:33},(_,j)=>{const y=.2+(top-.2)*j/32;return new T.Vector3(x,y,faceZ(y,side))}),.009,frame)}
     // Narrow silver reveal follows the actual trapezoid, with no filled dark strips.
     const corners=[[-w*.23,h-14],[-w*.265,h-3],[w*.265,h-3],[w*.23,h-14],[-w*.23,h-14]];
     for(let i=1;i<corners.length;i++){const [x,y]=corners[i-1],[xx,yy]=corners[i];tube(g,[new T.Vector3(x,y,faceZ(y,side)),new T.Vector3(xx,yy,faceZ(yy,side))],.07,frame)}
    }
+   // Fine mullions on the curved narrow faces, avoiding blank side panels.
+   for(const sign of [-1,1])for(let floor=1;floor<101;floor++){const y=floor*h/101;box(g,sign*(halfWidth(y)+.015),y,0,.025,.022,depthAt(y)*2,frame)}
    // Glass observation bridge recessed into the opening.
    box(g,0,h-13.65,0,w*.45,.38,d*.37,sideGlass);
    box(g,0,.8,0,w*1.08,1.6,d*1.08,sideGlass);
