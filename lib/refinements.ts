@@ -13,7 +13,7 @@ export function addRefinements(world:T.Group,scene:T.Scene,groups:Map<string,T.G
  const cyan=new T.MeshStandardMaterial({color:'#678791',emissive:'#5ebadb',emissiveIntensity:0});
  const magenta=new T.MeshStandardMaterial({color:'#875273',emissive:'#e959ae',emissiveIntensity:0});
  const white=new T.MeshStandardMaterial({color:'#d8d9cc',roughness:.65});
- const red=new T.MeshStandardMaterial({color:'#963c32',roughness:.7});
+ const red=new T.MeshStandardMaterial({color:'#963c32',roughness:.7});const signalRed=new T.MeshStandardMaterial({color:'#e94032',emissive:'#ff3020',emissiveIntensity:1.2});const signalGreen=new T.MeshStandardMaterial({color:'#24cc79',emissive:'#24ff85',emissiveIntensity:.1});
  const green=new T.MeshStandardMaterial({color:'#436747',roughness:.9});
  const asphalt=new T.MeshStandardMaterial({color:'#3b4547',roughness:.9});
  const boxGeometry=new T.BoxGeometry(1,1,1),sphereGeometry=new T.SphereGeometry(1,10,7);
@@ -83,23 +83,24 @@ export function addRefinements(world:T.Group,scene:T.Scene,groups:Map<string,T.G
  const rm=reflection.material as T.ShaderMaterial;rm.transparent=true;rm.depthWrite=false;rm.uniforms.waveTime={value:0};rm.uniforms.reflectOpacity={value:.17};
  rm.fragmentShader='uniform float waveTime; uniform float reflectOpacity;\n'+rm.fragmentShader.replace('texture2DProj( tDiffuse, vUv )','texture2DProj( tDiffuse, vUv + vec4(sin(vUv.y*90.0+waveTime)*0.0018*vUv.w, cos(vUv.x*70.0+waveTime*.7)*0.0009*vUv.w, 0.0, 0.0) )').replace('blendOverlay( base.rgb, color ), 1.0','blendOverlay( base.rgb, color ), reflectOpacity');
  // Streetscape follows mapped paths near the named destinations.
- const pedestrians:T.Group[]=[];const pedestrianPaths:T.Vector3[][]=[];let crossingCount=0,busStops=0;
- const near=(p:number[])=>landmarks.some(l=>Math.hypot(l.x-p[0],l.z-p[1])<40);
+ const pedestrians:T.Group[]=[];const pedestrianPaths:T.Vector3[][]=[];let crossingCount=0,busStops=0;const signalSites:number[][]=[];
+ const near=(p:number[])=>p[0]>-185&&p[0]<245&&p[1]>-230&&p[1]<230;
  for(const r of mapData.roads.filter(r=>['primary','secondary','tertiary'].includes(r.kind)&&!r.bridge)){
-  if(crossingCount>=28||r.points.length<2||!near(r.points[0]))continue;
+  if(crossingCount>=72||r.points.length<2||!near(r.points[0]))continue;
+  if(signalSites.some(p=>Math.hypot(p[0]-r.points[0][0],p[1]-r.points[0][1])<9))continue;signalSites.push(r.points[0]);
   const [x,z]=r.points[0],next=r.points[1],a=Math.atan2(next[0]-x,next[1]-z),width=Math.max(2.2,Math.min(r.lanes*3.2*.22,6));
   const g=new T.Group();g.position.set(x,.3,z);g.rotation.y=a;g.name='Crossing and signal';world.add(g);
   for(let i=-3;i<=3;i++)box(g,0,.03,i*.38,width,.03,.18,white);
-  for(const side of [-1,1]){box(g,side*(width/2+.5),1.4,1,.10,2.8,.1,steel);box(g,side*(width/2+.5),2.6,1,.30,.7,.22,asphalt);sphere(g,side*(width/2+.5),2.8,1.14,.075,red);sphere(g,side*(width/2+.5),2.45,1.14,.075,green)}crossingCount++;
-  if(busStops<8&&crossingCount%3===0){const b=new T.Group();b.name='Bus shelter';b.position.set(width/2+2,0,7);g.add(b);box(b,0,1.8,0,1.3,.12,3.5,steel);box(b,.55,.9,0,.08,1.8,3.3,unlitWindow);box(b,0,.55,0,.55,.12,2.5,limestone);for(const zz of [-1.5,1.5])box(b,-.5,.9,zz,.06,1.8,.06,steel);box(b,.5,1.8,2,.1,.9,.6,amber);busStops++}
+  for(const side of [-1,1]){box(g,side*(width/2+.5),1.4,1,.10,2.8,.1,steel);box(g,side*(width/2+.5),2.6,1,.30,.7,.22,asphalt);sphere(g,side*(width/2+.5),2.8,1.14,.075,signalRed);sphere(g,side*(width/2+.5),2.45,1.14,.075,signalGreen)}crossingCount++;
+  if(busStops<20&&crossingCount%3===0){const b=new T.Group();b.name='Bus shelter';b.position.set(width/2+2,0,7);g.add(b);box(b,0,1.8,0,1.3,.12,3.5,steel);box(b,.55,.9,0,.08,1.8,3.3,unlitWindow);box(b,0,.55,0,.55,.12,2.5,limestone);for(const zz of [-1.5,1.5])box(b,-.5,.9,zz,.06,1.8,.06,steel);box(b,.5,1.8,2,.1,.9,.6,amber);busStops++}
  }
  const clothes=[bronze,red,steel,unlitWindow,white];
- for(const r of mapData.roads.filter(r=>['footway','pedestrian'].includes(r.kind)&&r.points.length>=2&&r.points.some(near)).slice(0,45)){
+ for(const r of mapData.roads.filter(r=>['footway','pedestrian'].includes(r.kind)&&r.points.length>=2&&r.points.some(near)).sort((a,b)=>Math.min(...a.points.map(p=>p[1]))-Math.min(...b.points.map(p=>p[1]))).filter((_,i)=>i%2===0).slice(0,160)){
   const points=r.points.map(p=>new T.Vector3(p[0],.34,p[1]));const pathIndex=pedestrianPaths.push(points)-1;
   for(let i=0;i<3;i++){const g=new T.Group();g.name='Pedestrian';box(g,0,.2,0,.11,.24,.08,clothes[(pathIndex+i)%5]);sphere(g,0,.39,0,.065,limestone);for(const x of [-.035,.035])box(g,x,.065,0,.035,.13,.04,unlitWindow);g.userData.pathIndex=pathIndex;g.userData.phase=i/3;g.userData.length=points.slice(1).reduce((n,p,j)=>n+p.distanceTo(points[j]),0);world.add(g);pedestrians.push(g)}
   // Occasional benches and planters on the edge of the pedestrian path.
   if(pathIndex%3===0){const [x,z]=r.points[0];box(world,x+.75,.5,z,.4,.15,1.5,bronze);box(world,x+.9,.7,z,.12,.45,1.5,bronze);box(world,x+.8,.45,z+2,.7,.5,.7,limestone);sphere(world,x+.8,.9,z+2,.5,green)}
  }
  function along(points:T.Vector3[],distance:number){for(let i=1;i<points.length;i++){const len=points[i].distanceTo(points[i-1]);if(distance<=len)return points[i-1].clone().lerp(points[i],len?distance/len:0);distance-=len}return points[points.length-1].clone()}
- return {update(time:number,night:number){amber.emissiveIntensity=night*1.3;cyan.emissiveIntensity=night*.9;magenta.emissiveIntensity=night*1.4;rm.uniforms.waveTime.value=time;rm.uniforms.reflectOpacity.value=.14+night*.28;pedestrians.forEach(p=>{const length=p.userData.length;if(length<.1)return;const phase=(time*.23/length+p.userData.phase)%2;const position=along(pedestrianPaths[p.userData.pathIndex],(phase>1?2-phase:phase)*length);p.position.copy(position)})},stats:{signatureBuildings:7,crossings:crossingCount,busStops,pedestrians:pedestrians.length},dispose(){reflection.dispose();reflection.geometry.dispose();scene.remove(reflection)}};
+ return {update(time:number,night:number){signalRed.emissiveIntensity=time%24<12?1.5:.05;signalGreen.emissiveIntensity=time%24>=12?1.5:.05;amber.emissiveIntensity=night*1.3;cyan.emissiveIntensity=night*.9;magenta.emissiveIntensity=night*1.4;rm.uniforms.waveTime.value=time;rm.uniforms.reflectOpacity.value=.14+night*.28;pedestrians.forEach(p=>{const length=p.userData.length;if(length<.1)return;const phase=(time*.23/length+p.userData.phase)%2;const position=along(pedestrianPaths[p.userData.pathIndex],(phase>1?2-phase:phase)*length);p.position.copy(position)})},stats:{signatureBuildings:7,crossings:crossingCount,busStops,pedestrians:pedestrians.length},dispose(){reflection.dispose();reflection.geometry.dispose();scene.remove(reflection)}};
 }
