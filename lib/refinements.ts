@@ -71,7 +71,7 @@ export function addRefinements(world:T.Group,scene:T.Scene,groups:Map<string,T.G
  }
  // Planar reflection is clipped to mapped river polygons and lightly distorted by waves.
  const waterShapes=mapData.water.filter(w=>w.river).map(w=>new T.Shape(w.points.map(p=>new T.Vector2(p[0],-p[1]))));
- const reflection=new Reflector(new T.ShapeGeometry(waterShapes),{color:0x819397,textureWidth:512,textureHeight:512,clipBias:.003,multisample:0});
+ const reflection=new Reflector(new T.ShapeGeometry(waterShapes),{color:0x819397,textureWidth:1024,textureHeight:1024,clipBias:.003,multisample:0});
  reflection.rotation.x=-Math.PI/2;reflection.position.y=.19;reflection.name='Browser-only river reflection';scene.add(reflection);
  const rm=reflection.material as T.ShaderMaterial;rm.transparent=true;rm.depthWrite=false;rm.uniforms.waveTime={value:0};rm.uniforms.reflectOpacity={value:.17};
  rm.fragmentShader='uniform float waveTime; uniform float reflectOpacity;\n'+rm.fragmentShader.replace('texture2DProj( tDiffuse, vUv )','texture2DProj( tDiffuse, vUv + vec4(sin(vUv.y*90.0+waveTime)*0.0018*vUv.w, cos(vUv.x*70.0+waveTime*.7)*0.0009*vUv.w, 0.0, 0.0) )').replace('blendOverlay( base.rgb, color ), 1.0','blendOverlay( base.rgb, color ), reflectOpacity');
@@ -94,5 +94,5 @@ export function addRefinements(world:T.Group,scene:T.Scene,groups:Map<string,T.G
   if(pathIndex%3===0){const [x,z]=r.points[0];box(world,x+.75,.5,z,.4,.15,1.5,bronze);box(world,x+.9,.7,z,.12,.45,1.5,bronze);box(world,x+.8,.45,z+2,.7,.5,.7,limestone);sphere(world,x+.8,.9,z+2,.5,green)}
  }
  function along(points:T.Vector3[],distance:number){for(let i=1;i<points.length;i++){const len=points[i].distanceTo(points[i-1]);if(distance<=len)return points[i-1].clone().lerp(points[i],len?distance/len:0);distance-=len}return points[points.length-1].clone()}
- return {update(time:number,night:number){amber.emissiveIntensity=night*1.3;cyan.emissiveIntensity=night*.9;magenta.emissiveIntensity=night*1.4;rm.uniforms.waveTime.value=time;rm.uniforms.reflectOpacity.value=.14+night*.16;pedestrians.forEach(p=>{const length=p.userData.length;if(length<.1)return;const phase=(time*.23/length+p.userData.phase)%2;const position=along(pedestrianPaths[p.userData.pathIndex],(phase>1?2-phase:phase)*length);p.position.copy(position)})},stats:{signatureBuildings:7,crossings:crossingCount,busStops,pedestrians:pedestrians.length},dispose(){reflection.dispose();reflection.geometry.dispose();scene.remove(reflection)}};
+ return {update(time:number,night:number){amber.emissiveIntensity=night*1.3;cyan.emissiveIntensity=night*.9;magenta.emissiveIntensity=night*1.4;rm.uniforms.waveTime.value=time;rm.uniforms.reflectOpacity.value=.14+night*.28;pedestrians.forEach(p=>{const length=p.userData.length;if(length<.1)return;const phase=(time*.23/length+p.userData.phase)%2;const position=along(pedestrianPaths[p.userData.pathIndex],(phase>1?2-phase:phase)*length);p.position.copy(position)})},stats:{signatureBuildings:7,crossings:crossingCount,busStops,pedestrians:pedestrians.length},dispose(){reflection.dispose();reflection.geometry.dispose();scene.remove(reflection)}};
 }

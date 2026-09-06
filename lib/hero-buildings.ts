@@ -36,21 +36,21 @@ export function refineHeroBuildings(groups:Map<string,T.Group>){
    }box(g,0,1,0,w*1.15,2,d*1.2,glass);
   }
   if(id==='pearl'){
-   const concrete=new T.MeshStandardMaterial({color:'#c8bca4',roughness:.82,metalness:.03});
+   const concrete=new T.MeshStandardMaterial({color:'#c8bca4',roughness:.82,metalness:.03,emissive:'#ffc16a',emissiveIntensity:0});glow.push({material:concrete,strength:.95});
    const cap=new T.MeshStandardMaterial({color:'#b9bdb7',roughness:.55,metalness:.22});
    const pearl=new T.MeshPhysicalMaterial({color:'#a96782',metalness:.32,roughness:.36,clearcoat:.7,emissive:'#ff4f9d',emissiveIntensity:0});glow.push({material:pearl,strength:.45});
-   for(let i=0;i<3;i++){const a=i*Math.PI*2/3;const lower=new T.Vector3(Math.cos(a)*9,0,Math.sin(a)*9),upper=new T.Vector3(Math.cos(a)*2,30,Math.sin(a)*2);tube(g,[lower,upper],1.25,concrete);cylinder(g,Math.cos(a)*2,51,Math.sin(a)*2,1.05,42,concrete);tube(g,[lower.clone().add(new T.Vector3(0,0,.08)),upper.clone().add(new T.Vector3(0,0,.08))],.09,warm)}
+   for(let i=0;i<3;i++){const a=i*Math.PI*2/3;const lower=new T.Vector3(Math.cos(a)*9,0,Math.sin(a)*9),upper=new T.Vector3(Math.cos(a)*2,30,Math.sin(a)*2);tube(g,[lower,upper],1.25,concrete);tube(g,[lower.clone().multiply(new T.Vector3(1.015,1,1.015)),upper.clone().multiply(new T.Vector3(1.015,1,1.015))],.12,cool);cylinder(g,Math.cos(a)*2,51,Math.sin(a)*2,1.05,42,concrete);tube(g,[lower.clone().add(new T.Vector3(0,0,.08)),upper.clone().add(new T.Vector3(0,0,.08))],.09,warm)}
    for(const [y,r]of [[30,10.5],[72,7],[88,3.1]]){
     const ball=new T.Mesh(new T.SphereGeometry(r,64,40),cap);ball.position.y=y;g.add(ball);const band=new T.Mesh(new T.SphereGeometry(r*1.004,64,24,0,Math.PI*2,Math.PI*.32,Math.PI*.36),pearl);band.position.y=y;g.add(band);
     for(let k=-6;k<=6;k++){const lat=k*Math.PI/16,rr=r*Math.cos(lat);tube(g,Array.from({length:65},(_,i)=>new T.Vector3(Math.cos(i*Math.PI/32)*rr,y+Math.sin(lat)*r,Math.sin(i*Math.PI/32)*rr)),k%3===0?.06:.025,Math.abs(k)<=2?(k%2===0?rose:metal):cap)}
     for(let i=0;i<24;i++){const a=i*Math.PI/12;tube(g,Array.from({length:25},(_,k)=>{const lat=-Math.PI/2+k*Math.PI/24;return new T.Vector3(Math.cos(a)*r*Math.cos(lat),y+r*Math.sin(lat),Math.sin(a)*r*Math.cos(lat))}),.035,metal)}
     cylinder(g,0,y,0,r*1.015,.65,dark);
-   }for(let y=40;y<=65;y+=5){cylinder(g,0,y,0,2.65,.35,cap);box(g,0,y+.22,0,3.2,.3,2.6,pearl)}for(const [y,r,len]of [[94,.5,12],[101,.22,7]])cylinder(g,0,y,0,r,len,metal);cylinder(g,0,.5,0,12,1,metal);
+   }for(let y=40;y<=65;y+=5){cylinder(g,0,y,0,2.65,.35,cap);box(g,0,y+.22,0,3.2,.3,2.6,rose)}for(const [y,r,len]of [[94,.5,12],[101,.22,7]])cylinder(g,0,y,0,r,len,metal);cylinder(g,0,.5,0,12,1,metal);
   }
   if(id==='customs'||id==='hsbc'){
    // Independent limestone finish, with fine masonry joints and a softly lit stone surface.
    const c=document.createElement('canvas');c.width=c.height=256;const a=c.getContext('2d')!;a.fillStyle='#c5b9a5';a.fillRect(0,0,256,256);for(let y=0;y<256;y+=32){a.fillStyle='#9d9587';a.fillRect(0,y,256,1);for(let x=(y/32%2)*32;x<256;x+=64)a.fillRect(x,y,1,32)}const texture=new T.CanvasTexture(c);texture.wrapS=texture.wrapT=T.RepeatWrapping;texture.repeat.set(3,2);texture.colorSpace=T.SRGBColorSpace;
-   g.traverse(o=>{if(!(o instanceof T.Mesh)||Array.isArray(o.material))return;const old=o.material as T.MeshStandardMaterial;if(old.metalness<.2&& !old.emissive?.getHex()){const m=old.clone();m.map=texture;m.bumpMap=texture;m.bumpScale=.035;m.roughness=.86;m.color.set('#e2d7c2');m.emissive.set('#eabf85');glow.push({material:m,strength:.24});o.material=m}});
+   g.traverse(o=>{if(!(o instanceof T.Mesh)||Array.isArray(o.material))return;const old=o.material as T.MeshStandardMaterial;if(old.metalness<.2&& !old.emissive?.getHex()){const m=old.clone();m.map=texture;m.bumpMap=texture;m.bumpScale=.035;m.roughness=.86;m.color.set('#e2d7c2');m.emissive.set('#eabf85');glow.push({material:m,strength:.48});o.material=m}});
    const base=h*(id==='customs'?.57:.65);
    for(let z=-d/2+1;z<d/2;z+=1.3){box(g,w/2+.12,base*.57,z,.12,base*.55,.09,metal);box(g,w/2+.18,base*.87,z,.18,.12,.8,warm)}
    if(id==='customs'){
@@ -63,5 +63,5 @@ export function refineHeroBuildings(groups:Map<string,T.Group>){
   }
   g.traverse(o=>{o.userData.landmark=id;if(o instanceof T.Mesh){o.castShadow=true;o.receiveShadow=true}});
  }
- return {update(night:number){const n=Math.min(1,Math.max(0,night));glow.forEach(v=>v.material.emissiveIntensity=v.strength*n);lights.forEach(l=>l.intensity=85*n)}};
+ return {update(night:number){const n=Math.min(1,Math.max(0,night));glow.forEach(v=>v.material.emissiveIntensity=v.strength*n);lights.forEach(l=>l.intensity=120*n)}};
 }

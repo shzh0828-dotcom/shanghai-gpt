@@ -18,6 +18,8 @@ export function addNightSkyline(world:T.Group,groups:Map<string,T.Group>){
  // Give the convention centre and shopping podiums their own illuminated surfaces.
  const surfaceLights:{m:T.MeshStandardMaterial;strength:number}[]=[];
  for(const [id,color,strength] of [['convention','#76e1ff',.85],['superbrand','#e09cff',.65],['ifc','#6badff',.6],['jinmao','#ffd17a',.5]] as const){const group=groups.get(id);group?.traverse(o=>{if(!(o instanceof T.Mesh)||Array.isArray(o.material))return;const original=o.material as T.MeshStandardMaterial;if(!original.isMeshStandardMaterial)return;const m=original.clone();m.emissive.set(color);o.material=m;surfaceLights.push({m,strength})})}
+ // Warm stone illumination along the historic Bund waterfront.
+ for(const id of ['peace','boc','bund18','club'])groups.get(id)?.traverse(o=>{if(!(o instanceof T.Mesh)||Array.isArray(o.material))return;const original=o.material as T.MeshStandardMaterial;if(!original.isMeshStandardMaterial||original.metalness>.25)return;const m=original.clone();m.emissive.set('#ffbe63');o.material=m;surfaceLights.push({m,strength:.42})});
  // OSM way 164970992: Aurora Plaza, 185 m; screen faces west toward the Bund.
  const b=mapData.buildings.find(b=>b.id==='164970992')!;
  const sh=new T.Shape(b.points.map(p=>new T.Vector2(p[0],-p[1])));const towerGeo=new T.ExtrudeGeometry(sh,{depth:b.height,bevelEnabled:false});towerGeo.rotateX(-Math.PI/2);
