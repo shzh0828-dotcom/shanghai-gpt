@@ -42,6 +42,13 @@ export function addRefinements(world:T.Group,scene:T.Scene,groups:Map<string,T.G
    if(id==='customs')for(const z of [-2.2,2.2])box(detail,l.w*.27+2.52,l.h*.825,z,.12,2.8,.15,amber);
    if(id==='peace')for(const z of [-3.1,3.1])box(detail,l.w*.28+3.6,l.h*.72,z,.12,l.h*.2,.12,amber);
   }
+  if(id==='peace'){
+   const tx=l.w*.28;
+   // Setback crown terraces and copper-green roof, based on the supplied views.
+   for(const [y,width]of [[l.h*.77,8.2],[l.h*.84,7.3]]){box(detail,tx,y,0,width,.35,width,limestone);for(let k=-3;k<=3;k++){box(detail,tx+width/2,y+.55,k,.18,.9,.18,limestone);box(detail,tx+k,y+.55,width/2,.18,.9,.18,limestone)}box(detail,tx,y+.95,0,width,.18,width,amber)}
+   for(const side of [-1,1])for(let z=-l.d/2+1;z<l.d/2;z+=1.4)box(detail,side*(l.w/2+.12),l.h*.34,z,.2,l.h*.6,.14,limestone);
+   for(let k=-2;k<=2;k++)box(detail,tx+3.6,l.h*.73,k,.1,.95,.45,unlitWindow);
+  }
   if(id==='shanghai'){
    // Nine mechanical-floor bands and a clearly outlined, tapered glass crown.
    for(let i=1;i<9;i++){const y=l.h*i/9,r=l.w*(.5-.18*i/9);ring(detail,y,r,.11,steel);ring(detail,y+.4,r,.045,cyan)}

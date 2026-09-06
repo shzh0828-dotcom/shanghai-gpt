@@ -85,7 +85,7 @@ export function createScene(host:HTMLElement,onSelect:(id:string)=>void,onManual
  const dome=mesh(g,new T.SphereGeometry(4.6,32,16,0,Math.PI*2,0,Math.PI/2),stone,tx,h*.82,0,1,.48,1);cyl(g,tx,h+1,0,.25,2,gold);for(let zz=-d*.25;zz<=d*.25;zz+=2.2){cyl(g,w/2+.75,h*.35,zz,.48,h*.42,trim);box(g,w/2+.75,h*.56,zz,1.2,.5,1.2,trim)}box(g,w/2+.7,h*.59,0,1.8,.6,d*.65,trim);
  }
  if(l.kind==='peace'){
- const tx=w*.28;box(g,tx,h*.72,0,7,h*.25,7,stone);for(let i=-2;i<=2;i+=2){box(g,tx+3.56,h*.75,i,.1,h*.17,.8,dark)}mesh(g,new T.ConeGeometry(5.3,h*.22,4),roof,tx,h*.92,0).rotation.y=Math.PI/4;cyl(g,tx,h*1.05,0,.07,2,trim);
+ const tx=w*.28;box(g,tx,h*.72,0,7,h*.25,7,stone);for(let i=-2;i<=2;i+=2){box(g,tx+3.56,h*.75,i,.1,h*.17,.8,dark)}mesh(g,new T.ConeGeometry(5.3,h*.29,4),roof,tx,h*.99,0).rotation.y=Math.PI/4;cyl(g,tx,h*1.18,0,.09,2,trim);
  }
  if(l.kind==='china'){box(g,0,h*.87,0,w*.72,4,d*.65);mesh(g,new T.ConeGeometry(8,3,4),roof,0,h+1,0).rotation.y=Math.PI/4;}
  if(l.kind==='artdeco'){box(g,0,h*.9,0,w*.55,4,d*.65);for(let xx=-4;xx<=4;xx+=2)box(g,xx,h*.95,d/2+.1,.6,h*.65,.5,trim);}
