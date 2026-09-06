@@ -8,7 +8,7 @@ export function refineHeroBuildings(groups:Map<string,T.Group>){
  const metal=new T.MeshStandardMaterial({color:'#aab9bd',metalness:.78,roughness:.28});
  const dark=new T.MeshStandardMaterial({color:'#263c47',metalness:.45,roughness:.3});
  function luminous(color:string,strength:number){const m=new T.MeshStandardMaterial({color,emissive:color,emissiveIntensity:0,metalness:.25,roughness:.35});glow.push({material:m,strength});return m}
- const warm=luminous('#ffd49a',1.8),cool=luminous('#a7d6f0',1.5),rose=luminous('#dc7fad',1.5);
+ const warm=luminous('#ffd49a',2.5),cool=luminous('#57caff',2.8),rose=luminous('#ef58ba',2.7);
  const unit=new T.BoxGeometry(1,1,1);
  function box(g:T.Object3D,x:number,y:number,z:number,w:number,h:number,d:number,m:T.Material){const o=new T.Mesh(unit,m);o.position.set(x,y,z);o.scale.set(w,h,d);g.add(o);return o}
  function tube(g:T.Object3D,p:T.Vector3[],r:number,m:T.Material){const o=new T.Mesh(new T.TubeGeometry(new T.CatmullRomCurve3(p),Math.max(8,p.length),r,4,false),m);g.add(o);return o}
@@ -36,7 +36,7 @@ export function refineHeroBuildings(groups:Map<string,T.Group>){
    }box(g,0,1,0,w*1.15,2,d*1.2,glass);
   }
   if(id==='pearl'){
-   const pearl=new T.MeshPhysicalMaterial({color:'#a58c9d',metalness:.62,roughness:.23,clearcoat:.7});
+   const pearl=new T.MeshPhysicalMaterial({color:'#a58c9d',metalness:.62,roughness:.23,clearcoat:.7,emissive:'#458dcd',emissiveIntensity:0});glow.push({material:pearl,strength:.7});
    for(let i=0;i<3;i++){const a=i*Math.PI*2/3;const lower=new T.Vector3(Math.cos(a)*9,0,Math.sin(a)*9),upper=new T.Vector3(Math.cos(a)*2,30,Math.sin(a)*2);tube(g,[lower,upper],1.25,metal);cylinder(g,Math.cos(a)*2,55,Math.sin(a)*2,1.05,58,metal);tube(g,[lower.clone().add(new T.Vector3(0,0,.08)),upper.clone().add(new T.Vector3(0,0,.08))],.09,warm)}
    for(const [y,r]of [[30,10.5],[72,7],[88,3.1]]){
     const ball=new T.Mesh(new T.SphereGeometry(r,64,40),pearl);ball.position.y=y;g.add(ball);

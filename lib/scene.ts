@@ -33,6 +33,7 @@ export function createScene(host:HTMLElement,onSelect:(id:string)=>void,onManual
  const contextGlass=new T.MeshStandardMaterial({map:facadeTexture('glass'),color:'#a5bac4',metalness:.6,roughness:.27});
  const contextBrick=new T.MeshStandardMaterial({map:facadeTexture('stone'),color:'#957965',roughness:.85});
  for(const m of [contextStone,contextGlass,contextBrick]){m.emissiveMap=glowTexture;m.emissive.set('#ffffff');m.emissiveIntensity=0;}
+ const pudongGlass=['#55baff','#ae85ff','#ff6d9f','#5be6e1','#ffd276'].map(color=>{const m=contextGlass.clone();m.emissive.set(color);return m});
  const surfaceBatches=new Map<T.Material,T.BufferGeometry[]>();
  function batch(geo:T.BufferGeometry,m:T.Material){if(!surfaceBatches.has(m))surfaceBatches.set(m,[]);surfaceBatches.get(m)!.push(geo)}
  function flush(){for(const [m,geos] of surfaceBatches){if(!geos.length)continue;const merged=mergeGeometries(geos.map(g=>g.index?g.toNonIndexed():g));if(merged){const o=new T.Mesh(merged,m);o.receiveShadow=true;o.castShadow=m===contextStone||m===contextGlass||m===contextBrick;world.add(o)}}surfaceBatches.clear()}
@@ -109,7 +110,7 @@ export function createScene(host:HTMLElement,onSelect:(id:string)=>void,onManual
 
  // The city follows OpenStreetMap footprints. Missing heights are explicitly estimated.
  const landmarkIds=new Set(Object.values(mapData.locations).map(l=>l.osmId));let count=0;
- for(const building of mapData.buildings){if(landmarkIds.has(building.id)||building.id==='164970992')continue;const xs=building.points.map(p=>p[0]),zs=building.points.map(p=>p[1]);const x=(Math.min(...xs)+Math.max(...xs))/2,z=(Math.min(...zs)+Math.max(...zs))/2;if(landmarks.some(l=>l.kind!=='street'&&Math.abs(x-l.x)<l.w*.48&&Math.abs(z-l.z)<l.d*.48))continue;const m=building.height>15?contextGlass:(count++%4===0?contextBrick:contextStone);polygon(building.points,building.height,0,m);polygon(building.points,0,building.height+.02,stone);if(building.height>8){const w=(Math.max(...xs)-Math.min(...xs))*.3,d=(Math.max(...zs)-Math.min(...zs))*.3;if(w>1&&d>1)box(world,x,building.height+.5,z,w,1,d,dark)}}
+ for(const building of mapData.buildings){if(landmarkIds.has(building.id)||building.id==='164970992')continue;const xs=building.points.map(p=>p[0]),zs=building.points.map(p=>p[1]);const x=(Math.min(...xs)+Math.max(...xs))/2,z=(Math.min(...zs)+Math.max(...zs))/2;if(landmarks.some(l=>l.kind!=='street'&&Math.abs(x-l.x)<l.w*.48&&Math.abs(z-l.z)<l.d*.48))continue;const m=building.height>15?(x>55?pudongGlass[Number(building.id)%pudongGlass.length]:contextGlass):(count++%4===0?contextBrick:contextStone);polygon(building.points,building.height,0,m);polygon(building.points,0,building.height+.02,stone);if(building.height>8){const w=(Math.max(...xs)-Math.min(...xs))*.3,d=(Math.max(...zs)-Math.min(...zs))*.3;if(w>1&&d>1)box(world,x,building.height+.5,z,w,1,d,dark)}}
  let seed=12;const rand=()=>{seed=(seed*16807)%2147483647;return(seed-1)/2147483646};
  // Trees follow mapped pedestrian routes, with varied crowns rather than identical balls.
  for(const r of mapData.roads.filter(r=>r.kind==='footway'&&r.points.length>3).slice(0,130)){for(let i=0;i<r.points.length;i+=4){const [x,z]=r.points[i];inst(bark,x,1,z,.25,2,.25);for(let j=0;j<3;j++)sphere(world,x+(rand()-.5),2.2+rand()*.6,z+(rand()-.5),.8+rand()*.5,leaf)}}
@@ -144,7 +145,7 @@ export function createScene(host:HTMLElement,onSelect:(id:string)=>void,onManual
  controls.update();controls.target.x=T.MathUtils.clamp(controls.target.x,-293,376);controls.target.z=T.MathUtils.clamp(controls.target.z,-269,318);controls.target.y=T.MathUtils.clamp(controls.target.y,0,145);
 
  refinement.update(time,windowMat.emissiveIntensity);heroes.update(windowMat.emissiveIntensity);skyline.update(windowMat.emissiveIntensity);wakeMaterials.forEach((m,i)=>m.opacity=.14+Math.sin(time*1.5+i)*.035);
- waveTexture.offset.set(time*.006,time*.003);for(const m of [contextStone,contextGlass,contextBrick])m.emissiveIntensity=windowMat.emissiveIntensity*.75;
+ waveTexture.offset.set(time*.006,time*.003);for(const m of [contextStone,contextGlass,contextBrick])m.emissiveIntensity=windowMat.emissiveIntensity*.75;for(const m of pudongGlass)m.emissiveIntensity=windowMat.emissiveIntensity*1.65;
  // River centerline measured from mapped Huangpu water geometry; separate lanes.
  const riverRoute=mapData.riverRoute.map(p=>new T.Vector3(p[0],0,p[1]));
  function pointOn(points:T.Vector3[],distance:number){let remaining=distance;for(let j=1;j<points.length;j++){const len=points[j].distanceTo(points[j-1]);if(remaining<=len){return {p:points[j-1].clone().lerp(points[j],remaining/len),direction:points[j].clone().sub(points[j-1]).normalize()}}remaining-=len}return{p:points[points.length-1].clone(),direction:points[points.length-1].clone().sub(points[points.length-2]).normalize()}}

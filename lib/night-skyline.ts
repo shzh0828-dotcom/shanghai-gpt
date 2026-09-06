@@ -15,6 +15,9 @@ export function addNightSkyline(world:T.Group,groups:Map<string,T.Group>){
    if(i%3===0)box(detail,ax,b.height*.65,az,.065,b.height*.7,.065,m);
   }
  }
+ // Give the convention centre and shopping podiums their own illuminated surfaces.
+ const surfaceLights:{m:T.MeshStandardMaterial;strength:number}[]=[];
+ for(const [id,color,strength] of [['convention','#76e1ff',.85],['superbrand','#e09cff',.65],['ifc','#6badff',.6],['jinmao','#ffd17a',.5]] as const){const group=groups.get(id);group?.traverse(o=>{if(!(o instanceof T.Mesh)||Array.isArray(o.material))return;const original=o.material as T.MeshStandardMaterial;if(!original.isMeshStandardMaterial)return;const m=original.clone();m.emissive.set(color);o.material=m;surfaceLights.push({m,strength})})}
  // OSM way 164970992: Aurora Plaza, 185 m; screen faces west toward the Bund.
  const b=mapData.buildings.find(b=>b.id==='164970992')!;
  const sh=new T.Shape(b.points.map(p=>new T.Vector2(p[0],-p[1])));const towerGeo=new T.ExtrudeGeometry(sh,{depth:b.height,bevelEnabled:false});towerGeo.rotateX(-Math.PI/2);
@@ -30,5 +33,5 @@ export function addNightSkyline(world:T.Group,groups:Map<string,T.Group>){
  const edge=b.points.slice(0,8);const verts:number[]=[],uv:number[]=[],idx:number[]=[];for(let i=0;i<edge.length;i++){const [x,z]=edge[i];verts.push(x-.055,10,z,x-.055,37,z);uv.push(1-i/(edge.length-1),0,1-i/(edge.length-1),1);if(i<edge.length-1){const k=i*2;idx.push(k,k+1,k+2,k+2,k+1,k+3)}}const sg=new T.BufferGeometry();sg.setAttribute('position',new T.Float32BufferAttribute(verts,3));sg.setAttribute('uv',new T.Float32BufferAttribute(uv,2));sg.setIndex(idx);sg.computeVertexNormals();screenMaterial.side=T.DoubleSide;const screen=new T.Mesh(sg,screenMaterial);screen.name='Aurora Plaza LED · I ❤️ SH (custom miniature content)';world.add(screen);
  for(let y=1;y<b.height;y+=1.05)box(world,63.15,y,-13.4,.07,.035,6.1,gold);
  const group=groups.get('auroraplaza')!;world.updateMatrixWorld(true);group.attach(tower);group.attach(screen);tower.userData.landmark=screen.userData.landmark='auroraplaza';
- return {update(n:number){accents.forEach(m=>m.emissiveIntensity=n*2.4);screenMaterial.emissiveIntensity=n*2.1;screen.visible=n>.05;}};
+ return {update(n:number){accents.forEach(m=>m.emissiveIntensity=n*3);surfaceLights.forEach(({m,strength})=>m.emissiveIntensity=n*strength);screenMaterial.emissiveIntensity=n*2.1;screen.visible=n>.05;}};
 }
