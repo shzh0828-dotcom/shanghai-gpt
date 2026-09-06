@@ -32,7 +32,7 @@ export function refineHeroBuildings(groups:Map<string,T.Group>){
     const z=side*(d/2+.025);for(let floor=1;floor<101;floor++){const y=floor*h/101;if(y>h-14&&y<h-3)continue;box(g,0,y,z,w*(1-.36*y/h),.035,.045,metal)}
     for(let i=-12;i<=12;i++){const x=i*w/26;const top=Math.min(h-14,h*(.5-Math.abs(x)/w)/.18);if(top>0)box(g,x,top/2,z,.025,top,.045,metal)}
     for(const sign of [-1,1])tube(g,[new T.Vector3(sign*w/2,0,z),new T.Vector3(sign*w*.32,h,z)],.065,cool);
-    for(const y of [h-14,h-3])box(g,0,y,z,w*.48,.09,.08,cool);
+    // Keep the opening framed by its glass geometry without added horizontal bands.
    }box(g,0,1,0,w*1.15,2,d*1.2,glass);
   }
   if(id==='pearl'){
