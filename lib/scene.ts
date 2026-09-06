@@ -1,3 +1,4 @@
+import { addNightSkyline } from './night-skyline';
 import { refineHeroBuildings } from './hero-buildings';
 import { addRefinements } from './refinements';
 import * as T from 'three';
@@ -27,11 +28,11 @@ export function createScene(host:HTMLElement,onSelect:(id:string)=>void,onManual
 
  // Procedural material maps add relief and window depth without external imagery.
  function facadeTexture(kind:string){const c=document.createElement('canvas');c.width=128;c.height=128;const ctx=c.getContext('2d')!;ctx.fillStyle=kind==='glass'?'#71838a':'#b9b0a0';ctx.fillRect(0,0,128,128);ctx.fillStyle=kind==='glass'?'#293f4d':'#344047';ctx.fillRect(17,12,94,94);ctx.fillStyle='#9aacb0';ctx.fillRect(20,14,3,90);ctx.fillStyle='#667c85';ctx.fillRect(24,17,83,5);ctx.fillStyle=kind==='glass'?'#a9b5b7':'#ded8cb';ctx.fillRect(0,117,128,7);ctx.fillRect(0,0,6,128);ctx.fillStyle='#202e35';ctx.fillRect(62,12,3,94);const t=new T.CanvasTexture(c);t.wrapS=t.wrapT=T.RepeatWrapping;t.colorSpace=T.SRGBColorSpace;t.anisotropy=renderer.capabilities.getMaxAnisotropy();return t}
- const glowCanvas=document.createElement('canvas');glowCanvas.width=512;glowCanvas.height=512;const gc=glowCanvas.getContext('2d')!;gc.fillStyle='#000';gc.fillRect(0,0,512,512);for(let row=0;row<4;row++)for(let col=0;col<4;col++){if((row*7+col*11)%5<2)continue;gc.fillStyle=(row+col)%3?'#f6ca89':'#a9cad2';gc.fillRect(col*128+20,row*128+16,88,86)}const glowTexture=new T.CanvasTexture(glowCanvas);glowTexture.wrapS=glowTexture.wrapT=T.RepeatWrapping;glowTexture.repeat.set(.25,.25);glowTexture.colorSpace=T.SRGBColorSpace;
+ const glowCanvas=document.createElement('canvas');glowCanvas.width=512;glowCanvas.height=512;const gc=glowCanvas.getContext('2d')!;gc.fillStyle='#000';gc.fillRect(0,0,512,512);for(let row=0;row<4;row++)for(let col=0;col<4;col++){if((row*7+col*11)%5<2)continue;gc.fillStyle=['#fff1d5','#b9ddff','#d7c9ff','#e7faff'][(row+col)%4];gc.fillRect(col*128+20,row*128+16,88,86)}const glowTexture=new T.CanvasTexture(glowCanvas);glowTexture.wrapS=glowTexture.wrapT=T.RepeatWrapping;glowTexture.repeat.set(.25,.25);glowTexture.colorSpace=T.SRGBColorSpace;
  const contextStone=new T.MeshStandardMaterial({map:facadeTexture('stone'),color:'#d7d1c4',roughness:.8});
  const contextGlass=new T.MeshStandardMaterial({map:facadeTexture('glass'),color:'#a5bac4',metalness:.6,roughness:.27});
  const contextBrick=new T.MeshStandardMaterial({map:facadeTexture('stone'),color:'#957965',roughness:.85});
- for(const m of [contextStone,contextGlass,contextBrick]){m.emissiveMap=glowTexture;m.emissive.set('#ffd394');m.emissiveIntensity=0;}
+ for(const m of [contextStone,contextGlass,contextBrick]){m.emissiveMap=glowTexture;m.emissive.set('#ffffff');m.emissiveIntensity=0;}
  const surfaceBatches=new Map<T.Material,T.BufferGeometry[]>();
  function batch(geo:T.BufferGeometry,m:T.Material){if(!surfaceBatches.has(m))surfaceBatches.set(m,[]);surfaceBatches.get(m)!.push(geo)}
  function flush(){for(const [m,geos] of surfaceBatches){if(!geos.length)continue;const merged=mergeGeometries(geos.map(g=>g.index?g.toNonIndexed():g));if(merged){const o=new T.Mesh(merged,m);o.receiveShadow=true;o.castShadow=m===contextStone||m===contextGlass||m===contextBrick;world.add(o)}}surfaceBatches.clear()}
@@ -96,6 +97,8 @@ export function createScene(host:HTMLElement,onSelect:(id:string)=>void,onManual
  box(g,0,6,0,w,12,d,stone);sphere(g,-w*.34,11,0,6,glass);sphere(g,w*.34,11,0,6,glass);for(let i=-8;i<9;i+=3)box(g,i,6,d/2+.1,.5,10,.3,trim);
  }else if(l.kind==='street'){
  box(g,0,.4,0,w,1,6,walk);for(let i=-3;i<=3;i++)for(const s of [-1,1]){box(g,i*10,5+(i%2),s*9,8,10+(i%2)*2,9,i%2?stone:trim);box(g,i*10,3,s*4.4,6,2,.4,gold)}
+ }else if(l.kind==='led'){
+ // Surveyed Aurora geometry and screen are added by night-skyline.
  }else if(l.kind==='ifc'||l.kind==='bfc'){
  box(g,0,4,0,w,8,d,stone);for(const s of [-1,1]){box(g,s*w*.29,h*.5,0,w*.38,h*(s===1?.85:1),d*.65,glass);for(let y=10;y<h*(s===1?.85:1);y+=4)box(g,s*w*.29,y,d*.33,w*.38,.35,.3,trim)}
  }else{
@@ -106,7 +109,7 @@ export function createScene(host:HTMLElement,onSelect:(id:string)=>void,onManual
 
  // The city follows OpenStreetMap footprints. Missing heights are explicitly estimated.
  const landmarkIds=new Set(Object.values(mapData.locations).map(l=>l.osmId));let count=0;
- for(const building of mapData.buildings){if(landmarkIds.has(building.id))continue;const xs=building.points.map(p=>p[0]),zs=building.points.map(p=>p[1]);const x=(Math.min(...xs)+Math.max(...xs))/2,z=(Math.min(...zs)+Math.max(...zs))/2;if(landmarks.some(l=>l.kind!=='street'&&Math.abs(x-l.x)<l.w*.48&&Math.abs(z-l.z)<l.d*.48))continue;const m=building.height>15?contextGlass:(count++%4===0?contextBrick:contextStone);polygon(building.points,building.height,0,m);polygon(building.points,0,building.height+.02,stone);if(building.height>8){const w=(Math.max(...xs)-Math.min(...xs))*.3,d=(Math.max(...zs)-Math.min(...zs))*.3;if(w>1&&d>1)box(world,x,building.height+.5,z,w,1,d,dark)}}
+ for(const building of mapData.buildings){if(landmarkIds.has(building.id)||building.id==='164970992')continue;const xs=building.points.map(p=>p[0]),zs=building.points.map(p=>p[1]);const x=(Math.min(...xs)+Math.max(...xs))/2,z=(Math.min(...zs)+Math.max(...zs))/2;if(landmarks.some(l=>l.kind!=='street'&&Math.abs(x-l.x)<l.w*.48&&Math.abs(z-l.z)<l.d*.48))continue;const m=building.height>15?contextGlass:(count++%4===0?contextBrick:contextStone);polygon(building.points,building.height,0,m);polygon(building.points,0,building.height+.02,stone);if(building.height>8){const w=(Math.max(...xs)-Math.min(...xs))*.3,d=(Math.max(...zs)-Math.min(...zs))*.3;if(w>1&&d>1)box(world,x,building.height+.5,z,w,1,d,dark)}}
  let seed=12;const rand=()=>{seed=(seed*16807)%2147483647;return(seed-1)/2147483646};
  // Trees follow mapped pedestrian routes, with varied crowns rather than identical balls.
  for(const r of mapData.roads.filter(r=>r.kind==='footway'&&r.points.length>3).slice(0,130)){for(let i=0;i<r.points.length;i+=4){const [x,z]=r.points[i];inst(bark,x,1,z,.25,2,.25);for(let j=0;j<3;j++)sphere(world,x+(rand()-.5),2.2+rand()*.6,z+(rand()-.5),.8+rand()*.5,leaf)}}
@@ -120,13 +123,13 @@ export function createScene(host:HTMLElement,onSelect:(id:string)=>void,onManual
  if(cargo){for(let row=0;row<3;row++)for(let col=0;col<2;col++)box(b,(col-.5)*1.2,1.15,row*2.5-3,1.1,.85,2.2,cargoColors[(row+col+i)%3]);box(b,0,1.5,4,width*.8,1.7,2,trim);box(b,0,2.2,3.85,width*.72,.55,1.8,glass)}else{for(let deck=0;deck<2;deck++){box(b,0,1+deck*.7,0,width*.83,.65,length*.62,trim);for(const side of [-1,1])box(b,side*width*.42,1+deck*.7,0,.035,.4,length*.55,glass)}box(b,0,2.15,0,width*.9,.15,length*.68,trim);for(const side of [-1,1])beam(b,new T.Vector3(side*width*.42,2.45,-2.6),new T.Vector3(side*width*.42,2.45,2.6),.035,gold)}
  const wm=new T.MeshBasicMaterial({color:'#c5d9ce',transparent:true,opacity:.19,depthWrite:false});wakeMaterials.push(wm);for(const side of [-1,1]){const wake=new T.Mesh(new T.PlaneGeometry(.3,length*.85),wm);wake.rotation.x=-Math.PI/2;wake.rotation.z=side*.18;wake.position.set(side*width*.7,-.33,length*.7);b.add(wake)}world.add(b);boats.push(b)}
  const cars:T.Group[]=[];for(let i=0;i<72;i++){const car=new T.Group();car.name='Vehicle '+(i+1);box(car,0,.3,0,.42,.3,1.05,i%4===0?gold:trim);box(car,0,.53,-.08,.37,.2,.55,glass);world.add(car);cars.push(car)}
- const refinement=addRefinements(world,scene,groups);const heroes=refineHeroBuildings(groups);pickables.length=0;for(const g of groups.values())g.traverse(o=>{if(o instanceof T.Mesh&&!pickables.includes(o))pickables.push(o)});
+ const skyline=addNightSkyline(world,groups);const refinement=addRefinements(world,scene,groups);const heroes=refineHeroBuildings(groups);pickables.length=0;for(const g of groups.values())g.traverse(o=>{if(o instanceof T.Mesh&&!pickables.includes(o))pickables.push(o)});
  world.traverse(o=>{if(o instanceof T.Mesh){o.receiveShadow=true;if(o.parent?.userData.landmark)o.castShadow=true}});
  const selectRing=new T.Mesh(new T.RingGeometry(1,1.08,64),new T.MeshBasicMaterial({color:'#edbe71',side:T.DoubleSide,transparent:true,opacity:.8}));selectRing.rotation.x=-Math.PI/2;selectRing.visible=false;scene.add(selectRing);
  const labelLayer=document.createElement('div');labelLayer.className='scene-labels';host.appendChild(labelLayer);const labels=landmarks.map(l=>{const e=document.createElement('button');e.className='map-label';e.textContent=l.name;e.onclick=()=>onSelect(l.id);labelLayer.appendChild(e);return {l,e}});
  let showLabels=true,paused=matchMedia('(prefers-reduced-motion: reduce)').matches,time=0,raf=0,last=performance.now(),selected='',flight:null|{from:T.Vector3;to:T.Vector3;targetFrom:T.Vector3;targetTo:T.Vector3;start:number;duration:number}=null;
  const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
- let lightMode='day';const themes:Record<string,{bg:string;water:string;sun:string;ambient:number;power:number;emission:number}>={day:{bg:'#b6d1d5',water:'#777c65',sun:'#fff4df',ambient:1.05,power:2.3,emission:0},sunset:{bg:'#d4a695',water:'#767269',sun:'#ffad65',ambient:1.6,power:3.1,emission:.45},night:{bg:'#101f36',water:'#173b54',sun:'#8eb8ff',ambient:.2,power:.3,emission:.8}};
+ let lightMode='day';const themes:Record<string,{bg:string;water:string;sun:string;ambient:number;power:number;emission:number}>={day:{bg:'#b6d1d5',water:'#777c65',sun:'#fff4df',ambient:1.05,power:2.3,emission:0},sunset:{bg:'#d4a695',water:'#767269',sun:'#ffad65',ambient:1.6,power:3.1,emission:.45},night:{bg:'#101f36',water:'#173b54',sun:'#8eb8ff',ambient:.3,power:.4,emission:1.05}};
  function fly(pos:T.Vector3,target:T.Vector3){flight={from:camera.position.clone(),to:pos,targetFrom:controls.target.clone(),targetTo:target,start:performance.now(),duration:reduced?0:2300};}
  const views:Record<string,[number[],number[]]>={overview:[[-455,335,560],[15,12,0]],bund:[[-40,52,30],[-133,9,-65]],skyline:[[-160,100,200],[170,42,-35]]};
  function view(id:string){const v=views[id]||views.overview;const p=new T.Vector3(...v[0]);if(id==='overview'&&camera.aspect<1.1)p.multiplyScalar(1.3);fly(p,new T.Vector3(...v[1]));}
@@ -140,7 +143,7 @@ export function createScene(host:HTMLElement,onSelect:(id:string)=>void,onManual
  if(paused&&flight)flight.start+=dt*1000;if(flight){const t=flight.duration===0?1:Math.min((now-flight.start)/flight.duration,1),e=t*t*(3-2*t);camera.position.lerpVectors(flight.from,flight.to,e);camera.position.y+=Math.sin(Math.PI*t)*170;controls.target.lerpVectors(flight.targetFrom,flight.targetTo,e);if(t===1)flight=null}
  controls.update();controls.target.x=T.MathUtils.clamp(controls.target.x,-293,376);controls.target.z=T.MathUtils.clamp(controls.target.z,-269,318);controls.target.y=T.MathUtils.clamp(controls.target.y,0,145);
 
- refinement.update(time,windowMat.emissiveIntensity);heroes.update(windowMat.emissiveIntensity);wakeMaterials.forEach((m,i)=>m.opacity=.14+Math.sin(time*1.5+i)*.035);
+ refinement.update(time,windowMat.emissiveIntensity);heroes.update(windowMat.emissiveIntensity);skyline.update(windowMat.emissiveIntensity);wakeMaterials.forEach((m,i)=>m.opacity=.14+Math.sin(time*1.5+i)*.035);
  waveTexture.offset.set(time*.006,time*.003);for(const m of [contextStone,contextGlass,contextBrick])m.emissiveIntensity=windowMat.emissiveIntensity*.75;
  // River centerline measured from mapped Huangpu water geometry; separate lanes.
  const riverRoute=mapData.riverRoute.map(p=>new T.Vector3(p[0],0,p[1]));

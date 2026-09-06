@@ -16,3 +16,5 @@ Additional photo references consulted:
 The model uses geometric interpretations rather than copied photo textures. Exact survey/photogrammetry fidelity is not claimed.
 
 Five-building refinement: Shanghai Tower taper and 120-degree rotation informed by https://www.gensler.com/projects/shanghai-tower and https://www.thorntontomasetti.com/project/shanghai-tower . Façade divisions and illumination are procedural approximations based on the supplied views.
+
+Night skyline: Aurora Plaza LED façade verified with Taiwan Glass (https://www.taiwanglass.com/application_detail.php?id=527&langeno=en&sid=159). Map footprint OSM way 164970992, https://mapcarta.com/W164970992 . I heart SH is user-requested miniature content, not a claim about the live screen. Other colorful façade accents are artistic interpretations of the supplied night photo.
