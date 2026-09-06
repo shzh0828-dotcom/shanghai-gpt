@@ -18,11 +18,11 @@ export function refineHeroBuildings(groups:Map<string,T.Group>){
   const g=groups.get(id)!,l=landmarks.find(v=>v.id===id)!,{w,h,d}=l;
   if(['shanghai','swfc','pearl','jinmao'].includes(id))g.clear();
   if(id==='jinmao'){
-   const glazing=curtain();glazing.color.set('#a9b6b9');glazing.emissive.set('#e8d4ac');
+   const glazing=curtain();glazing.color.set('#66777b');glazing.emissive.set('#e8d4ac');
    const silver=new T.MeshStandardMaterial({color:'#a9aaa3',metalness:.65,roughness:.36});
    const edge=luminous('#ffe0a2',1.7);
-   const tiers=[.50,.49,.48,.46,.44,.42,.39,.36,.32,.28,.23,.17];
-   const heights=[10,9,8,8,7,7,6,6,5,5,4,3];let y=0;const unitHeight=h*.86/heights.reduce((a,b)=>a+b,0);
+   const tiers=[.46,.455,.45,.44,.43,.415,.40,.385,.37,.355,.34,.325];
+   const heights=[14,12,10,9,8,7,6,5,4,3,2,2];let y=0;const unitHeight=h*.86/heights.reduce((a,b)=>a+b,0);
    for(let tier=0;tier<tiers.length;tier++){
     const radius=w*tiers[tier],hh=heights[tier]*unitHeight;
     const body=new T.Mesh(new T.CylinderGeometry(radius*.985,radius,hh,8),glazing);body.position.y=y+hh/2;body.rotation.y=Math.PI/8;g.add(body);
@@ -32,9 +32,18 @@ export function refineHeroBuildings(groups:Map<string,T.Group>){
      const b=a+Math.PI/4;for(const f of [.25,.5,.75]){const xx=(Math.sin(a)*(1-f)+Math.sin(b)*f)*radius,zz=(Math.cos(a)*(1-f)+Math.cos(b)*f)*radius;box(g,xx,y+hh/2,zz,.028,hh,.028,silver)}}
     y+=hh;
    }
-   const crown=new T.Mesh(new T.ConeGeometry(w*.17,h*.105,8),silver);crown.position.y=y+h*.0525;crown.rotation.y=Math.PI/8;g.add(crown);
-   for(let k=0;k<8;k++){const a=k*Math.PI/4+Math.PI/8;tube(g,[new T.Vector3(Math.sin(a)*w*.17,y,Math.cos(a)*w*.17),new T.Vector3(0,h*.965,0)],.04,edge)}
-   cylinder(g,0,h*.98,0,.085,h*.04,silver);cylinder(g,0,.65,0,w*.51,1.3,silver);
+   // Stacked octagonal lantern and projecting ledges, replacing the plain cone.
+   for(let tier=0;tier<7;tier++){
+    const radius=w*(.30-tier*.039),hh=h*.0135;
+    const lantern=new T.Mesh(new T.CylinderGeometry(radius*.9,radius,hh,8),silver);lantern.rotation.y=Math.PI/8;lantern.position.y=y+hh/2;g.add(lantern);
+    const ledge=new T.Mesh(new T.CylinderGeometry(radius*1.075,radius*1.075,.12,8),silver);ledge.rotation.y=Math.PI/8;ledge.position.y=y;g.add(ledge);
+    for(let k=0;k<8;k++){const a=k*Math.PI/4+Math.PI/8;const x=Math.sin(a)*radius,z=Math.cos(a)*radius;tube(g,[new T.Vector3(x,y,z),new T.Vector3(x*.9,y+hh,z*.9)],.045,edge)}y+=hh;
+   }
+   for(let k=0;k<4;k++){const a=k*Math.PI/2+Math.PI/4;tube(g,[new T.Vector3(Math.cos(a)*.6,y,Math.sin(a)*.6),new T.Vector3(Math.cos(a)*.28,h*.98,Math.sin(a)*.28)],.055,silver)}
+   cylinder(g,0,h*.978,0,.065,h*.044,silver);
+   // Narrow recessed vertical bays emphasize the tall, straight shaft.
+   for(let k=0;k<4;k++){const a=k*Math.PI/2;for(let tier=0,base=0;tier<tiers.length;tier++){const radius=w*tiers[tier]*.925,hh=heights[tier]*unitHeight;const bay=box(g,Math.sin(a)*radius,base+hh/2,Math.cos(a)*radius,.4,hh,.055,dark);bay.rotation.y=a;base+=hh}}
+   cylinder(g,0,.65,0,w*.47,1.3,silver);
   }
   if(id==='shanghai'){
    const glass=curtain();glass.side=T.DoubleSide;
