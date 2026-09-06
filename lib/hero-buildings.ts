@@ -74,13 +74,23 @@ export function refineHeroBuildings(groups:Map<string,T.Group>){
    cylinder(g,0,1.3,0,w*.62,2.6,glass);
   }
   if(id==='swfc'){
-   const glass=curtain();const s=new T.Shape();s.moveTo(-w/2,0);s.lineTo(w/2,0);s.lineTo(w*.32,h);s.lineTo(-w*.32,h);s.closePath();const opening=new T.Path();opening.moveTo(-w*.23,h-14);opening.lineTo(-w*.265,h-3);opening.lineTo(w*.265,h-3);opening.lineTo(w*.23,h-14);opening.closePath();s.holes.push(opening);const geo=new T.ExtrudeGeometry(s,{depth:d,bevelEnabled:false});geo.translate(0,0,-d/2);const uv=geo.attributes.uv;for(let i=0;i<uv.count;i++)uv.setXY(i,uv.getX(i)/w,uv.getY(i)/h);const sideGlass=glass.clone();sideGlass.map=null;sideGlass.emissiveMap=null;sideGlass.color.set('#91adb9');sideGlass.roughness=.38;sideGlass.metalness=.18;glow.push({material:sideGlass,strength:.12});g.add(new T.Mesh(geo,[glass,sideGlass]));
+   const glass=curtain();glass.map=null;glass.color.set('#7199ae');glass.metalness=.6;glass.roughness=.21;
+   const frame=new T.MeshStandardMaterial({color:'#c1cbd0',metalness:.72,roughness:.28});
+   const sideGlass=glass.clone();sideGlass.color.set('#a5bbc4');sideGlass.emissiveMap=null;glow.push({material:sideGlass,strength:.12});
+   const shape=new T.Shape();shape.moveTo(-w/2,0);shape.lineTo(w/2,0);shape.lineTo(w*.32,h);shape.lineTo(-w*.32,h);shape.closePath();
+   const opening=new T.Path();opening.moveTo(-w*.23,h-14);opening.lineTo(-w*.265,h-3);opening.lineTo(w*.265,h-3);opening.lineTo(w*.23,h-14);opening.closePath();shape.holes.push(opening);
+   const geo=new T.ExtrudeGeometry(shape,{depth:d,bevelEnabled:false});geo.translate(0,0,-d/2);const positions=geo.attributes.position;for(let i=0;i<positions.count;i++)positions.setZ(i,positions.getZ(i)*(1-.62*positions.getY(i)/h));geo.computeVertexNormals();const uv=geo.attributes.uv;for(let i=0;i<uv.count;i++)uv.setXY(i,uv.getX(i)/w,uv.getY(i)/h);g.add(new T.Mesh(geo,[glass,sideGlass]));
+   const faceZ=(y:number,side:number)=>side*(d/2*(1-.62*y/h)+.025);
    for(const side of [-1,1]){
-    const z=side*(d/2+.025);for(let floor=1;floor<101;floor++){const y=floor*h/101;if(y>h-14&&y<h-3)continue;box(g,0,y,z,w*(1-.36*y/h),.035,.045,metal)}
-    for(let i=-12;i<=12;i++){const x=i*w/26;const top=Math.min(h-14,h*(.5-Math.abs(x)/w)/.18);if(top>0)box(g,x,top/2,z,.025,top,.045,metal)}
-    // Clean tapered edges: no full-height overlay strips.
-    // Keep the opening framed by its glass geometry without added horizontal bands.
-   }box(g,0,1,0,w*1.15,2,d*1.2,glass);
+    for(let floor=1;floor<101;floor++){const y=floor*h/101,width=w*(1-.36*y/h),z=faceZ(y,side);if(y>h-14&&y<h-3){const halfHole=w*(.23+.035*(y-(h-14))/11);const length=width/2-halfHole;for(const sign of [-1,1])box(g,sign*(halfHole+length/2),y,z,length,.025,.03,frame)}else box(g,0,y,z,width,.025,.03,frame)}
+    for(let i=-18;i<=18;i++){const x=i*w/38,top=Math.min(h-14,h*(.5-Math.abs(x)/w)/.18);if(top>0)tube(g,[new T.Vector3(x,.2,faceZ(.2,side)),new T.Vector3(x,top,faceZ(top,side))],.009,frame)}
+    // Narrow silver reveal follows the actual trapezoid, with no filled dark strips.
+    const corners=[[-w*.23,h-14],[-w*.265,h-3],[w*.265,h-3],[w*.23,h-14],[-w*.23,h-14]];
+    for(let i=1;i<corners.length;i++){const [x,y]=corners[i-1],[xx,yy]=corners[i];tube(g,[new T.Vector3(x,y,faceZ(y,side)),new T.Vector3(xx,yy,faceZ(yy,side))],.07,frame)}
+   }
+   // Glass observation bridge recessed into the opening.
+   box(g,0,h-13.65,0,w*.45,.38,d*.37,sideGlass);
+   box(g,0,.8,0,w*1.08,1.6,d*1.08,sideGlass);
   }
   if(id==='pearl'){
    const concrete=new T.MeshStandardMaterial({color:'#c8bca4',roughness:.82,metalness:.03,emissive:'#ffc16a',emissiveIntensity:0});glow.push({material:concrete,strength:.3});
