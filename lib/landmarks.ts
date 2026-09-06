@@ -28,4 +28,6 @@ export const landmarks:Landmark[]=[
 {id:'club',name:'Shanghai Club Building',zh:'上海总会大楼',category:'Heritage',x:-75,z:91,h:11,w:21,d:17,kind:'classic',description:'A richly detailed historic building on the southern stretch of the Bund, now part of the Waldorf Astoria hotel complex.',source:bund,address:'2 Zhongshan East 1st Road · Puxi'},
 ];
 for (const l of landmarks) {if(l.id==='peace')l.h=17;if(l.id==='hsbc')l.h=13.2;const location=(mapData.locations as Record<string,{x:number;z:number}>)[l.id];if(location){l.x=location.x;l.z=location.z;}}
+// Preserve both detailed models while leaving a narrow lane between their outer cornices.
+landmarks.find(l=>l.id==='hsbc')!.z += 6.5;
 export const categories=['All','Heritage','Skyline','Culture','Shopping'];

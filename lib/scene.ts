@@ -120,6 +120,10 @@ export function createScene(host:HTMLElement,onSelect:(id:string)=>void,onManual
  g.traverse(o=>{o.userData.landmark=l.id;if(o instanceof T.Mesh)pickables.push(o)});
  }
 
+ // Narrow lane separating Customs House and the former HSBC Building.
+ const customsPlace=landmarks.find(l=>l.id==='customs')!,hsbcPlace=landmarks.find(l=>l.id==='hsbc')!;
+ const laneZ=(customsPlace.z+customsPlace.d/2+hsbcPlace.z-hsbcPlace.d/2)/2;
+ box(world,(customsPlace.x+hsbcPlace.x)/2,.22,laneZ,23,.08,2.2,road);
  // The city follows OpenStreetMap footprints. Missing heights are explicitly estimated.
  const landmarkIds=new Set(Object.values(mapData.locations).map(l=>l.osmId));let count=0;
  for(const building of mapData.buildings){if(landmarkIds.has(building.id)||building.id==='164970992')continue;const xs=building.points.map(p=>p[0]),zs=building.points.map(p=>p[1]);const x=(Math.min(...xs)+Math.max(...xs))/2,z=(Math.min(...zs)+Math.max(...zs))/2;if(landmarks.some(l=>l.kind!=='street'&&Math.abs(x-l.x)<l.w*.48&&Math.abs(z-l.z)<l.d*.48))continue;const m=building.height>15?(x>55?pudongGlass[Number(building.id)%pudongGlass.length]:contextGlass):(count++%4===0?contextBrick:contextStone);polygon(building.points,building.height,0,m);polygon(building.points,0,building.height+.02,stone);if(building.height>8){const w=(Math.max(...xs)-Math.min(...xs))*.3,d=(Math.max(...zs)-Math.min(...zs))*.3;if(w>1&&d>1)box(world,x,building.height+.5,z,w,1,d,dark)}}
