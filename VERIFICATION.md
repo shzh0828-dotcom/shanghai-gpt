@@ -10,3 +10,11 @@
 - The model uses 2,109 mapped building outlines and 2,026 road/path sections; these are map features, not counts of unique real-world buildings or streets. Some outlines are building parts. Heights without map tags are estimated.
 - Landmark architecture is a procedural interpretation guided by user photos and additional references. It is not an exact photogrammetric or survey reconstruction. Some roofs, footprints and materials remain simplified. Museum interiors are omitted.
 - Start-of-build account usage: 9% of five-hour allowance and 9% weekly used. Later usage includes intervening conversation and any other account activity; it is not project-isolated.
+
+## Selected improvements (1, 3, 4, 5)
+
+- Added detailed geometry to seven signature landmarks: mullions, crowns, architectural bands, heritage cornices, entrances and dome ribs.
+- Added selective architectural lighting and varied lit/unlit windows.
+- Added rippled planar river reflections, cargo/cruise vessel variants and animated wakes.
+- Added landmark-area crossings, signals, bus shelters, benches, planters and moving pedestrians. Street furniture is illustrative rather than surveyed.
+- TypeScript and production build passed. Local browser rendered day and Customs House night views with no captured console errors. Landmark flight and lighting tools passed. Updated GLB export completed and reloaded successfully through the exporter validation. Reflective water remains browser-only.
