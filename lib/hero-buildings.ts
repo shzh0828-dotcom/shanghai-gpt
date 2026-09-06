@@ -18,13 +18,21 @@ export function refineHeroBuildings(groups:Map<string,T.Group>){
   const g=groups.get(id)!,l=landmarks.find(v=>v.id===id)!,{w,h,d}=l;
   if(['shanghai','swfc','pearl'].includes(id))g.clear();
   if(id==='shanghai'){
-   const glass=curtain();
-   function point(t:number,a:number){const r=w*.5*Math.pow(.55,t)*(1+.09*Math.cos(a*3));const turn=a+t*Math.PI*2/3;return new T.Vector3(Math.cos(turn)*r,t*h,Math.sin(turn)*r)}
+   const glass=curtain();glass.side=T.DoubleSide;
+   function point(t:number,a:number){const r=w*.5*Math.pow(.55,t)*(1+.09*Math.cos(a*3));const turn=a+t*Math.PI*2/3;const crownBlend=T.MathUtils.smoothstep(t,.90,1);const lipDrop=8*(1-a/(Math.PI*2));return new T.Vector3(Math.cos(turn)*r,t*h-crownBlend*lipDrop,Math.sin(turn)*r)}
    const vertices:number[]=[],uv:number[]=[],indices:number[]=[];for(let j=0;j<=124;j++)for(let i=0;i<=96;i++){const p=point(j/124,i/96*Math.PI*2);vertices.push(p.x,p.y,p.z);uv.push(i/96,j/124);if(j<124&&i<96){const k=j*97+i;indices.push(k,k+97,k+1,k+1,k+97,k+98)}}const geo=new T.BufferGeometry();geo.setAttribute('position',new T.Float32BufferAttribute(vertices,3));geo.setAttribute('uv',new T.Float32BufferAttribute(uv,2));geo.setIndex(indices);geo.computeVertexNormals();g.add(new T.Mesh(geo,glass));
    for(let i=0;i<48;i++)tube(g,Array.from({length:65},(_,j)=>point(j/64,i/48*Math.PI*2)),.026,metal);
    for(let j=1;j<=124;j++){const pts=Array.from({length:97},(_,i)=>point(j/124,i/96*Math.PI*2).multiply(new T.Vector3(1.002,1,1.002)));tube(g,pts,j%14===0?.075:.022,j%14===0?metal:dark)}
    for(const a of [0,Math.PI*2/3,Math.PI*4/3])tube(g,Array.from({length:65},(_,j)=>point(j/64,a).multiply(new T.Vector3(1.006,1,1.006))),.05,cool);
-   const crown=new T.Mesh(new T.CircleGeometry(w*.275,64),metal);crown.rotation.x=-Math.PI/2;crown.position.y=h-.05;g.add(crown);cylinder(g,0,1.3,0,w*.62,2.6,glass);
+   // Recessed service roof within an open, rising spiral glass parapet.
+   const roof=new T.Mesh(new T.CircleGeometry(w*.245,64),dark);roof.rotation.x=-Math.PI/2;roof.position.y=h-10;g.add(roof);
+   for(const inset of [0,.22,.48]){const lip=Array.from({length:129},(_,i)=>{const p=point(1,i/128*Math.PI*2);const radius=Math.hypot(p.x,p.z);p.x*=1-inset/radius;p.z*=1-inset/radius;return p});tube(g,lip,.055,metal)}
+   for(let i=0;i<=64;i++){const a=i/64*Math.PI*2,p=point(1,a),q=p.clone();q.y-=.72;tube(g,[q,p],.032,metal);const inner=p.clone().multiply(new T.Vector3(.91,1,.91));tube(g,[p,inner],.025,metal)}
+   for(const a of [0,Math.PI*2]){const low=point(.90,a),high=point(1,a);tube(g,[low,high],.075,metal)}
+   cylinder(g,0,h-9.8,0,1.4,.35,metal);cylinder(g,0,h-9.56,0,.85,.15,dark);
+   for(let i=-2;i<=2;i++)for(const side of [-1,1]){box(g,i*1.3,h-9.65,side*2.4,.8,.5,.75,metal);box(g,i*1.3,h-9.38,side*2.4,.65,.035,.58,dark)}
+   for(const z of [-1.3,1.3])box(g,0,h-9.94,z,8,.06,.18,metal);
+   cylinder(g,0,1.3,0,w*.62,2.6,glass);
   }
   if(id==='swfc'){
    const glass=curtain();const s=new T.Shape();s.moveTo(-w/2,0);s.lineTo(w/2,0);s.lineTo(w*.32,h);s.lineTo(-w*.32,h);s.closePath();const opening=new T.Path();opening.moveTo(-w*.23,h-14);opening.lineTo(-w*.265,h-3);opening.lineTo(w*.265,h-3);opening.lineTo(w*.23,h-14);opening.closePath();s.holes.push(opening);const geo=new T.ExtrudeGeometry(s,{depth:d,bevelEnabled:false});geo.translate(0,0,-d/2);const uv=geo.attributes.uv;for(let i=0;i<uv.count;i++)uv.setXY(i,uv.getX(i)/w,uv.getY(i)/h);g.add(new T.Mesh(geo,glass));
