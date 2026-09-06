@@ -66,8 +66,27 @@ export function refineHeroBuildings(groups:Map<string,T.Group>){
    const base=h*(id==='customs'?.57:.65);
    for(let z=-d/2+1;z<d/2;z+=1.3){box(g,w/2+.12,base*.57,z,.12,base*.55,.09,metal);box(g,w/2+.18,base*.87,z,.18,.12,.8,warm)}
    if(id==='customs'){
-    const dial=luminous('#f3dba9',.75);
+    const dial=luminous('#fff5dd',1.1);
     for(let side=0;side<4;side++){const face=new T.Group();face.position.set(w*.27,h*.825,0);face.rotation.y=side*Math.PI/2;g.add(face);const disk=new T.Mesh(new T.CircleGeometry(1.38,64),dial);disk.position.z=2.49;face.add(disk);for(let tick=0;tick<60;tick++){const a=tick*Math.PI/30;const mark=box(face,Math.sin(a)*1.18,Math.cos(a)*1.18,2.505,tick%5===0?.055:.025,tick%5===0?.18:.075,.018,dark);mark.rotation.z=-a}box(face,0,.4,2.53,.055,.85,.025,dark);const hand=box(face,.35,.1,2.54,.74,.065,.025,dark);hand.rotation.z=.28;}
+   }
+   if(id==='customs'){
+    const stone=new T.MeshStandardMaterial({color:'#c2b6a1',roughness:.85,emissive:'#ffc47b',emissiveIntensity:0});glow.push({material:stone,strength:.4});
+    const tx=w*.27;
+    // Four-sided belfry, tall recessed windows and projecting stone trim.
+    for(let side=0;side<4;side++){const face=new T.Group();face.position.x=tx;face.rotation.y=side*Math.PI/2;g.add(face);
+     for(const x of [-1.4,0,1.4]){box(face,x,h*.66,3.13,.62,2.6,.08,dark);for(let y=h*.60;y<h*.72;y+=.38)box(face,x,y,3.19,.65,.045,.05,metal)}
+     box(face,0,h*.94,1.77,1.6,.55,.05,dark);for(const x of [-.85,.85])box(face,x,h*.94,1.82,.12,.7,.16,stone);
+     for(const y of [h*.745,h*.765,h*.905])box(face,0,y,2.85,5.8,.12,.3,stone);
+     for(let k=-2;k<=2;k++)box(face,k,h*.77,2.68,.15,.18,.2,stone);
+     // Fine radial glazing bars on each clock, kept behind the hands.
+     for(let tick=0;tick<24;tick++){const angle=tick*Math.PI/12;const bar=box(face,Math.sin(angle)*.56,h*.825+Math.cos(angle)*.56,2.52,.012,1.03,.008,dark);bar.rotation.z=-angle}
+    }
+    for(const z of [-d*.42,d*.42]){box(g,w*.2,base+.75,z,w*.6,1.5,1.7,stone);box(g,w*.2,base+1.55,z,w*.62,.2,1.9,stone)}
+    for(let z=-d*.42;z<=d*.42;z+=.45)box(g,w/2+.28,base-.25,z,.3,.25,.15,stone);
+    for(let z=-d*.32;z<=d*.32;z+=1.75){box(g,w/2+.22,base*.62,z,.12,base*.55,.72,dark);for(let y=base*.4;y<base*.86;y+=.75)box(g,w/2+.30,y,z,.05,.04,.72,metal)}
+    // Entrance portico with four columns and a deep shadowed recess.
+    box(g,w/2+.12,1.65,0,.12,2.7,5.6,dark);for(const z of [-2.1,-.7,.7,2.1]){cylinder(g,w/2+.62,1.65,z,.2,2.8,stone);box(g,w/2+.62,3.1,z,.65,.18,.65,stone)}box(g,w/2+.55,3.35,0,1.2,.35,6,stone);
+    cylinder(g,tx,h+1.7,0,.035,2.4,metal);const flag=new T.Mesh(new T.PlaneGeometry(.95,.6),new T.MeshStandardMaterial({color:'#c62b25',side:T.DoubleSide,roughness:.8}));flag.position.set(tx+.48,h+2.35,0);g.add(flag);
    }
    if(id==='hsbc')for(let k=0;k<24;k++){const a=k*Math.PI/12;tube(g,Array.from({length:20},(_,i)=>{const t=i/19*Math.PI/2;return new T.Vector3(w*.2+4.66*Math.cos(t)*Math.cos(a),h*.82+2.24*Math.sin(t),4.66*Math.cos(t)*Math.sin(a))}),.028,warm)}
    // Local upward-facing luminaires give cornices and columns real shading.
