@@ -26,7 +26,7 @@ export function refineHeroBuildings(groups:Map<string,T.Group>){
    for(let side=0;side<4;side++)for(const [x,z]of [[-.62,1],[.62,1],[.62,.83],[.83,.83],[.83,.62],[1,.62]] as const){const a=-side*Math.PI/2;outline.push(new T.Vector2(x*Math.cos(a)-z*Math.sin(a),x*Math.sin(a)+z*Math.cos(a)))}
    function section(radius:number,height:number,base:number,material:T.Material){const shape=new T.Shape(outline.map(p=>p.clone().multiplyScalar(radius)));const geo=new T.ExtrudeGeometry(shape,{depth:height,bevelEnabled:false});geo.rotateX(-Math.PI/2);const uv=geo.attributes.uv;for(let i=0;i<uv.count;i++)uv.setXY(i,uv.getX(i)/(radius*2),uv.getY(i)/Math.max(height,1));const mesh=new T.Mesh(geo,material);mesh.position.y=base;g.add(mesh);return mesh}
    const tiers=[.46,.455,.45,.44,.43,.415,.40,.385,.37,.355,.34,.325];
-   const heights=[14,12,10,9,8,7,6,5,4,3,2,2];let y=0;const unitHeight=h*.86/heights.reduce((a,b)=>a+b,0);
+   const heights=[16,14,12,9,8,7,6,5,4,3,2,2];let y=0;const unitHeight=h*.86/heights.reduce((a,b)=>a+b,0);
    for(let tier=0;tier<tiers.length;tier++){
     const radius=w*tiers[tier],hh=heights[tier]*unitHeight;
     section(radius,hh,y,glazing);section(radius*1.014,.12,y+hh,silver);
