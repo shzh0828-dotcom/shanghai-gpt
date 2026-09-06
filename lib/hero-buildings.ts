@@ -39,13 +39,25 @@ export function refineHeroBuildings(groups:Map<string,T.Group>){
    const concrete=new T.MeshStandardMaterial({color:'#c8bca4',roughness:.82,metalness:.03,emissive:'#ffc16a',emissiveIntensity:0});glow.push({material:concrete,strength:.95});
    const cap=new T.MeshStandardMaterial({color:'#b9bdb7',roughness:.55,metalness:.22});
    const pearl=new T.MeshPhysicalMaterial({color:'#a96782',metalness:.32,roughness:.36,clearcoat:.7,emissive:'#ff4f9d',emissiveIntensity:0});glow.push({material:pearl,strength:.45});
-   for(let i=0;i<3;i++){const a=i*Math.PI*2/3;const lower=new T.Vector3(Math.cos(a)*9,0,Math.sin(a)*9),upper=new T.Vector3(Math.cos(a)*2,30,Math.sin(a)*2);tube(g,[lower,upper],1.25,concrete);tube(g,[lower.clone().multiply(new T.Vector3(1.015,1,1.015)),upper.clone().multiply(new T.Vector3(1.015,1,1.015))],.12,cool);cylinder(g,Math.cos(a)*2,51,Math.sin(a)*2,1.05,42,concrete);tube(g,[lower.clone().add(new T.Vector3(0,0,.08)),upper.clone().add(new T.Vector3(0,0,.08))],.09,warm)}
-   for(const [y,r]of [[30,10.5],[72,7],[88,3.1]]){
-    const ball=new T.Mesh(new T.SphereGeometry(r,64,40),cap);ball.position.y=y;g.add(ball);const band=new T.Mesh(new T.SphereGeometry(r*1.004,64,24,0,Math.PI*2,Math.PI*.32,Math.PI*.36),pearl);band.position.y=y;g.add(band);
-    for(let k=-6;k<=6;k++){const lat=k*Math.PI/16,rr=r*Math.cos(lat);tube(g,Array.from({length:65},(_,i)=>new T.Vector3(Math.cos(i*Math.PI/32)*rr,y+Math.sin(lat)*r,Math.sin(i*Math.PI/32)*rr)),k%3===0?.06:.025,Math.abs(k)<=2?(k%2===0?rose:metal):cap)}
-    for(let i=0;i<24;i++){const a=i*Math.PI/12;tube(g,Array.from({length:25},(_,k)=>{const lat=-Math.PI/2+k*Math.PI/24;return new T.Vector3(Math.cos(a)*r*Math.cos(lat),y+r*Math.sin(lat),Math.sin(a)*r*Math.cos(lat))}),.035,metal)}
-    cylinder(g,0,y,0,r*1.015,.65,dark);
-   }for(let y=40;y<=65;y+=5){cylinder(g,0,y,0,2.65,.35,cap);box(g,0,y+.22,0,3.2,.3,2.6,rose)}for(const [y,r,len]of [[94,.5,12],[101,.22,7]])cylinder(g,0,y,0,r,len,metal);cylinder(g,0,.5,0,12,1,metal);
+   const bead=(x:number,y:number,z:number,r:number,m:T.Material)=>{const o=new T.Mesh(new T.SphereGeometry(r,20,12),m);o.position.set(x,y,z);g.add(o)};
+   // Three continuous columns with outward-raking buttresses below the lower sphere.
+   for(let i=0;i<3;i++){const a=i*Math.PI*2/3,ux=Math.cos(a),uz=Math.sin(a);cylinder(g,ux*1.55,42,uz*1.55,.82,44,concrete);tube(g,[new T.Vector3(ux*10,1,uz*10),new T.Vector3(ux*1.55,24,uz*1.55)],.95,concrete);bead(ux*5.5,12,uz*5.5,1.2,cap);tube(g,[new T.Vector3(ux*10,1,uz*10),new T.Vector3(ux*1.55,24,uz*1.55)],.055,cool)}
+   for(const [y,r]of [[24,6.5],[65,5.5],[81,1.7]]){
+    const ball=new T.Mesh(new T.SphereGeometry(r,64,40),cap);ball.position.y=y;g.add(ball);
+    const band=new T.Mesh(new T.SphereGeometry(r*1.004,64,24,0,Math.PI*2,Math.PI*.27,Math.PI*.46),pearl);band.position.y=y;g.add(band);
+    // Two crossing sets of diagonals form the characteristic diamond curtain wall.
+    for(const direction of [-1,1])for(let i=0;i<32;i++){const points=[];for(let j=0;j<=24;j++){const lat=-.72+j/24*1.44,a=i*Math.PI/16+direction*lat*.8;points.push(new T.Vector3(Math.cos(a)*r*Math.cos(lat)*1.01,y+r*Math.sin(lat),Math.sin(a)*r*Math.cos(lat)*1.01))}tube(g,points,.023,metal)}
+    for(const lat of [-.78,-.62,0,.62,.78]){const rr=r*Math.cos(lat);tube(g,Array.from({length:65},(_,i)=>new T.Vector3(Math.cos(i*Math.PI/32)*rr,y+Math.sin(lat)*r,Math.sin(i*Math.PI/32)*rr)),.045,lat===0?rose:metal)}
+    for(const lat of [-.94,.94])for(let i=0;i<36;i++){const a=i*Math.PI/18;bead(Math.cos(a)*r*Math.cos(lat),y+r*Math.sin(lat),Math.sin(a)*r*Math.cos(lat),.06,dark)}
+    cylinder(g,0,y-r*.65,0,r*.77,.3,dark);
+   }
+   for(let y=33;y<=58;y+=4.2){cylinder(g,0,y,0,1.85,.25,cap);cylinder(g,0,y+.35,0,1.35,.5,dark);cylinder(g,0,y+.65,0,1.7,.12,rose);for(let i=0;i<12;i++){const a=i*Math.PI/6;cylinder(g,Math.cos(a)*1.7,y+.5,Math.sin(a)*1.7,.025,.55,metal)}}
+   // Ribbed antenna base, small upper pearl, narrowing mast and painted tip.
+   cylinder(g,0,74.3,0,.85,9,concrete);for(let y=70;y<80;y+=.45)cylinder(g,0,y,0,.94,.07,metal);
+   cylinder(g,0,86,0,.48,8,metal);for(let y=82;y<90;y+=.4)cylinder(g,0,y,0,.53,.05,dark);
+   cylinder(g,0,94,0,.17,8,metal);for(let y=98;y<103;y+=.65)cylinder(g,0,y+.325,0,.09,.65,Math.floor((y-98)/.65)%2?cap:pearl);
+   cylinder(g,0,.5,0,11,1,cap);cylinder(g,0,1.2,0,7,.5,dark);
+
   }
   if(id==='customs'||id==='hsbc'){
    // Independent limestone finish, with fine masonry joints and a softly lit stone surface.
