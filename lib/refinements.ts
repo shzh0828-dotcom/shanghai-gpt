@@ -27,7 +27,7 @@ export function addRefinements(world:T.Group,scene:T.Scene,groups:Map<string,T.G
  for(const id of seven){const g=groups.get(id)!,l=landmarks.find(l=>l.id===id)!;
   const detail=new T.Group();detail.name=l.name+' architectural refinement';detail.userData.landmark=id;g.add(detail);
   if(['customs','hsbc','peace'].includes(id)){
-   const base=l.h*(id==='customs'?.57:.65);
+   const base=l.h*(id==='customs'?.457:.65);
    // Stone dentils, balustrades, recessed entrances and shallow stair flights.
    for(let z=-l.d/2+.5;z<l.d/2;z+=.7){box(detail,l.w/2+.55,base-.25,z,.35,.35,.32,limestone);box(detail,l.w/2+.3,base+1.1,z,.18,.8,.18,limestone)}
    box(detail,l.w/2+.3,base+1.5,0,.4,.2,l.d,limestone);

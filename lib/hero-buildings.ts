@@ -1,7 +1,7 @@
 import * as T from 'three';
 import { landmarks } from './landmarks';
 
-// Dedicated materials and geometry keep this pass scoped to the five requested buildings.
+// Detailed landmark envelopes; dimensions use the common city scale.
 export function refineHeroBuildings(groups:Map<string,T.Group>){
  const glow:{material:T.MeshStandardMaterial;strength:number}[]=[];
  const lights:T.SpotLight[]=[];
@@ -18,7 +18,7 @@ export function refineHeroBuildings(groups:Map<string,T.Group>){
   const g=groups.get(id)!,l=landmarks.find(v=>v.id===id)!,{w,h,d}=l;
   if(['shanghai','swfc','pearl','jinmao'].includes(id))g.clear();
   if(id==='jinmao'){
-   const glazing=curtain();glazing.color.set('#53636b');glazing.emissive.set('#d8d3bd');glow.find(item=>item.material===glazing)!.strength=.48;
+   const glazing=curtain();glazing.color.set('#b4bdc0');glazing.metalness=.3;glazing.roughness=.32;glazing.emissive.set('#d8d3bd');glow.find(item=>item.material===glazing)!.strength=.48;
    const silver=new T.MeshStandardMaterial({color:'#a9aaa3',metalness:.65,roughness:.36});
    const edge=luminous('#fff0cf',3.1);const crownMetal=luminous('#e4dcc5',1.15);
    // Re-entrant corners and projecting piers give the shaft its sculpted profile.
@@ -26,7 +26,7 @@ export function refineHeroBuildings(groups:Map<string,T.Group>){
    for(let side=0;side<4;side++)for(const [x,z]of [[-.62,1],[.62,1],[.62,.83],[.83,.83],[.83,.62],[1,.62]] as const){const a=-side*Math.PI/2;outline.push(new T.Vector2(x*Math.cos(a)-z*Math.sin(a),x*Math.sin(a)+z*Math.cos(a)))}
    function section(radius:number,height:number,base:number,material:T.Material){const shape=new T.Shape(outline.map(p=>p.clone().multiplyScalar(radius)));const geo=new T.ExtrudeGeometry(shape,{depth:height,bevelEnabled:false});geo.rotateX(-Math.PI/2);const uv=geo.attributes.uv;for(let i=0;i<uv.count;i++)uv.setXY(i,uv.getX(i)/(radius*2),uv.getY(i)/Math.max(height,1));const mesh=new T.Mesh(geo,material);mesh.position.y=base;g.add(mesh);return mesh}
    const tiers=[.46,.455,.45,.44,.43,.415,.40,.385,.37,.355,.34,.325];
-   const heights=[16,14,12,9,8,7,6,5,4,3,2,2];let y=0;const unitHeight=h*.86/heights.reduce((a,b)=>a+b,0);
+   const heights=[16,14,12,10,8,7,6,5,4,3,2,1];let y=0;const unitHeight=h*.86/heights.reduce((a,b)=>a+b,0);
    for(let tier=0;tier<tiers.length;tier++){
     const radius=w*tiers[tier],hh=heights[tier]*unitHeight;
     section(radius,hh,y,glazing);section(radius*1.014,.12,y+hh,silver);
@@ -59,7 +59,7 @@ export function refineHeroBuildings(groups:Map<string,T.Group>){
 
   }
   if(id==='shanghai'){
-   const glass=curtain();glass.side=T.DoubleSide;
+   const glass=curtain();glass.side=T.DoubleSide;glass.color.set('#c0d6df');glass.metalness=.25;glass.emissive.set('#e8dfcb');glow.find(item=>item.material===glass)!.strength=.55;
    function point(t:number,a:number){const r=w*.5*Math.pow(.55,t)*(1+.09*Math.cos(a*3));const turn=a+t*Math.PI*2/3;const crownBlend=T.MathUtils.smoothstep(t,.90,1);const lipDrop=8*(1-a/(Math.PI*2));return new T.Vector3(Math.cos(turn)*r,t*h-crownBlend*lipDrop,Math.sin(turn)*r)}
    const vertices:number[]=[],uv:number[]=[],indices:number[]=[];for(let j=0;j<=124;j++)for(let i=0;i<=96;i++){const p=point(j/124,i/96*Math.PI*2);vertices.push(p.x,p.y,p.z);uv.push(i/96,j/124);if(j<124&&i<96){const k=j*97+i;indices.push(k,k+97,k+1,k+1,k+97,k+98)}}const geo=new T.BufferGeometry();geo.setAttribute('position',new T.Float32BufferAttribute(vertices,3));geo.setAttribute('uv',new T.Float32BufferAttribute(uv,2));geo.setIndex(indices);geo.computeVertexNormals();g.add(new T.Mesh(geo,glass));
    for(let i=0;i<48;i++)tube(g,Array.from({length:65},(_,j)=>point(j/64,i/48*Math.PI*2)),.026,metal);
@@ -76,7 +76,7 @@ export function refineHeroBuildings(groups:Map<string,T.Group>){
    cylinder(g,0,1.3,0,w*.62,2.6,glass);
   }
   if(id==='swfc'){
-   const glass=curtain();glass.map=null;glass.color.set('#7199ae');glass.metalness=.6;glass.roughness=.21;
+   const glass=curtain();glass.map=null;glass.color.set('#86a9b9');glass.emissive.set('#e5dcc7');glow.find(item=>item.material===glass)!.strength=.48;glass.metalness=.32;glass.roughness=.21;
    const frame=new T.MeshStandardMaterial({color:'#c1cbd0',metalness:.72,roughness:.28});
    const sideGlass=glass.clone();sideGlass.color.set('#a5bbc4');sideGlass.emissiveMap=null;glow.push({material:sideGlass,strength:.12});
    const halfWidth=(y:number)=>w*(.5-.18*Math.pow(y/h,1.6));const depthAt=(y:number)=>d/2*(1-.62*Math.pow(y/h,1.35));
@@ -103,8 +103,8 @@ export function refineHeroBuildings(groups:Map<string,T.Group>){
    const pearl=new T.MeshPhysicalMaterial({color:'#a96782',metalness:.32,roughness:.36,clearcoat:.7,emissive:'#ff4f9d',emissiveIntensity:0});glow.push({material:pearl,strength:.45});
    const bead=(x:number,y:number,z:number,r:number,m:T.Material)=>{const o=new T.Mesh(new T.SphereGeometry(r,20,12),m);o.position.set(x,y,z);g.add(o)};
    // Three continuous columns with outward-raking buttresses below the lower sphere.
-   for(let i=0;i<3;i++){const a=i*Math.PI*2/3,ux=Math.cos(a),uz=Math.sin(a);cylinder(g,ux*1.55,42,uz*1.55,.82,44,concrete);tube(g,[new T.Vector3(ux*10,1,uz*10),new T.Vector3(ux*1.55,24,uz*1.55)],.95,concrete);bead(ux*5.5,12,uz*5.5,1.2,cap);tube(g,[new T.Vector3(ux*10,1,uz*10),new T.Vector3(ux*1.55,24,uz*1.55)],.055,cool)}
-   for(const [y,r]of [[24,6.5],[65,5.5],[81,1.7]]){
+   for(let i=0;i<3;i++){const a=i*Math.PI*2/3,ux=Math.cos(a),uz=Math.sin(a);cylinder(g,ux*1.55,44,uz*1.55,.66,44,concrete);tube(g,[new T.Vector3(ux*8.8,1,uz*8.8),new T.Vector3(ux*1.55,25.96,uz*1.55)],.95,concrete);bead(ux*5.5,12,uz*5.5,1.2,cap);tube(g,[new T.Vector3(ux*8.8,1,uz*8.8),new T.Vector3(ux*1.55,25.96,uz*1.55)],.055,cool)}
+   for(const [y,r]of [[25.96,5.5],[64.9,4.95],[77,1.54]]){
     const ball=new T.Mesh(new T.SphereGeometry(r,64,40),cap);ball.position.y=y;g.add(ball);
     const band=new T.Mesh(new T.SphereGeometry(r*1.004,64,24,0,Math.PI*2,Math.PI*.27,Math.PI*.46),pearl);band.position.y=y;g.add(band);
     // Two crossing sets of diagonals form the characteristic diamond curtain wall.
@@ -115,17 +115,17 @@ export function refineHeroBuildings(groups:Map<string,T.Group>){
    }
    for(let y=33;y<=58;y+=4.2){cylinder(g,0,y,0,1.85,.25,cap);cylinder(g,0,y+.35,0,1.35,.5,dark);cylinder(g,0,y+.65,0,1.7,.12,rose);for(let i=0;i<12;i++){const a=i*Math.PI/6;cylinder(g,Math.cos(a)*1.7,y+.5,Math.sin(a)*1.7,.025,.55,metal)}}
    // Ribbed antenna base, small upper pearl, narrowing mast and painted tip.
-   cylinder(g,0,74.3,0,.85,9,concrete);for(let y=70;y<80;y+=.45)cylinder(g,0,y,0,.94,.07,metal);
-   cylinder(g,0,86,0,.48,8,metal);for(let y=82;y<90;y+=.4)cylinder(g,0,y,0,.53,.05,dark);
-   cylinder(g,0,94,0,.17,8,metal);for(let y=98;y<103;y+=.65)cylinder(g,0,y+.325,0,.09,.65,Math.floor((y-98)/.65)%2?cap:pearl);
-   cylinder(g,0,.5,0,11,1,cap);cylinder(g,0,1.2,0,7,.5,dark);
+   cylinder(g,0,71.2,0,.85,9,concrete);for(let y=69;y<76;y+=.45)cylinder(g,0,y,0,.94,.07,metal);
+   cylinder(g,0,83.5,0,.42,10,metal);for(let y=78.5;y<88.5;y+=.4)cylinder(g,0,y,0,.53,.05,dark);
+   cylinder(g,0,93.25,0,.17,9.5,metal);for(let y=98;y<102.3;y+=.65)cylinder(g,0,y+.325,0,.09,.65,Math.floor((y-98)/.65)%2?cap:pearl);
+   cylinder(g,0,.5,0,9.2,1,cap);cylinder(g,0,1.2,0,7,.5,dark);
 
   }
   if(id==='customs'||id==='hsbc'){
    // Independent limestone finish, with fine masonry joints and a softly lit stone surface.
    const c=document.createElement('canvas');c.width=c.height=256;const a=c.getContext('2d')!;a.fillStyle='#c5b9a5';a.fillRect(0,0,256,256);for(let y=0;y<256;y+=32){a.fillStyle='#9d9587';a.fillRect(0,y,256,1);for(let x=(y/32%2)*32;x<256;x+=64)a.fillRect(x,y,1,32)}const texture=new T.CanvasTexture(c);texture.wrapS=texture.wrapT=T.RepeatWrapping;texture.repeat.set(3,2);texture.colorSpace=T.SRGBColorSpace;
    g.traverse(o=>{if(!(o instanceof T.Mesh)||Array.isArray(o.material))return;const old=o.material as T.MeshStandardMaterial;if(old.metalness<.2&& !old.emissive?.getHex()){const m=old.clone();m.map=texture;m.bumpMap=texture;m.bumpScale=.035;m.roughness=.86;m.color.set('#e2d7c2');m.emissive.set('#eabf85');glow.push({material:m,strength:.09});o.material=m}});
-   const base=h*(id==='customs'?.57:.65);
+   const base=h*(id==='customs'?.457:.65);
    for(let z=-d/2+1;z<d/2;z+=1.3){box(g,w/2+.12,base*.57,z,.12,base*.55,.09,metal);box(g,w/2+.18,base*.87,z,.18,.12,.8,warm)}
    if(id==='customs'){
     const dial=luminous('#fff5dd',1.1);
