@@ -1,5 +1,6 @@
 import * as T from 'three';
 import mapData from './map-data.json';
+import { landmarks } from './landmarks';
 export function addNightSkyline(world:T.Group,groups:Map<string,T.Group>){
  const palette=['#3e8cff','#a879ff','#ef4f91','#44dcec','#ffd38a','#f45b53'];
  const accents=palette.map(color=>new T.MeshStandardMaterial({color,emissive:color,emissiveIntensity:0}));
@@ -7,9 +8,12 @@ export function addNightSkyline(world:T.Group,groups:Map<string,T.Group>){
  function box(g:T.Object3D,x:number,y:number,z:number,w:number,h:number,d:number,m:T.Material){const o=new T.Mesh(geo,m);o.position.set(x,y,z);o.scale.set(w,h,d);g.add(o);return o}
  const detail=new T.Group();detail.name='Lujiazui architectural night accents';world.add(detail);
  for(const b of mapData.buildings){if(b.height<22||b.id==='164970992')continue;const xs=b.points.map(p=>p[0]),zs=b.points.map(p=>p[1]);const x=(Math.min(...xs)+Math.max(...xs))/2,z=(Math.min(...zs)+Math.max(...zs))/2;if(x<55||x>210||z< -150||z>110)continue;const w=Math.max(...xs)-Math.min(...xs),d=Math.max(...zs)-Math.min(...zs);const hash=Number(b.id)%6,m=accents[hash];if(w<2||d<2)continue;
-  // Light roof edges and selected façade bands, leaving dark glass between them.
-  for(const side of [-1,1]){box(detail,x+side*w*.49,b.height*.65,z,.07,b.height*.7,.07,m);box(detail,x,b.height+.1,z+side*d*.48,w,.12,.1,m)}
-  if(hash%2===0)for(let y=b.height*.62;y<b.height;y+=1.6)box(detail,x-w*.501,y,z,.08,.1,d*.9,m);
+  if(Object.values(mapData.locations).some(l=>l.osmId===b.id)||landmarks.some(l=>l.kind!=='street'&&Math.abs(x-l.x)<l.w*.48&&Math.abs(z-l.z)<l.d*.48))continue;
+  // Follow actual footprint walls; bounding-box lines can float beyond irregular façades.
+  for(let i=1;i<b.points.length;i++){const [ax,az]=b.points[i-1],[bx,bz]=b.points[i];const length=Math.hypot(bx-ax,bz-az);if(length<.3)continue;
+   const strip=box(detail,(ax+bx)/2,b.height-.08,(az+bz)/2,.065,.1,length,m);strip.rotation.y=Math.atan2(bx-ax,bz-az);
+   if(i%3===0)box(detail,ax,b.height*.65,az,.065,b.height*.7,.065,m);
+  }
  }
  // OSM way 164970992: Aurora Plaza, 185 m; screen faces west toward the Bund.
  const b=mapData.buildings.find(b=>b.id==='164970992')!;
