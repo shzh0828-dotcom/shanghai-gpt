@@ -18,9 +18,9 @@ export function refineHeroBuildings(groups:Map<string,T.Group>){
   const g=groups.get(id)!,l=landmarks.find(v=>v.id===id)!,{w,h,d}=l;
   if(['shanghai','swfc','pearl','jinmao'].includes(id))g.clear();
   if(id==='jinmao'){
-   const glazing=curtain();glazing.color.set('#66777b');glazing.emissive.set('#e8d4ac');
+   const glazing=curtain();glazing.color.set('#53636b');glazing.emissive.set('#d8d3bd');glow.find(item=>item.material===glazing)!.strength=.48;
    const silver=new T.MeshStandardMaterial({color:'#a9aaa3',metalness:.65,roughness:.36});
-   const edge=luminous('#ffe0a2',1.7);
+   const edge=luminous('#fff0cf',3.1);const crownMetal=luminous('#e4dcc5',1.15);
    // Re-entrant corners and projecting piers give the shaft its sculpted profile.
    const outline:T.Vector2[]=[];
    for(let side=0;side<4;side++)for(const [x,z]of [[-.62,1],[.62,1],[.62,.83],[.83,.83],[.83,.62],[1,.62]] as const){const a=-side*Math.PI/2;outline.push(new T.Vector2(x*Math.cos(a)-z*Math.sin(a),x*Math.sin(a)+z*Math.cos(a)))}
@@ -33,22 +33,23 @@ export function refineHeroBuildings(groups:Map<string,T.Group>){
     for(let floor=1;floor<heights[tier];floor++)section(radius*1.003,.045,y+floor*unitHeight,silver);
     for(let side=0;side<4;side++){
      const a=side*Math.PI/2;const face=new T.Group();face.rotation.y=a;g.add(face);
-     for(const x of [-.62,.62]){box(face,x*radius,y+hh/2,radius+.045,.14,hh,.18,silver);box(face,x*radius,y+hh/2,radius+.145,.035,hh,.025,edge)}
+     for(const x of [-.62,.62]){box(face,x*radius,y+hh/2,radius+.045,.14,hh,.18,silver);box(face,x*radius,y+hh/2,radius+.145,.065,hh,.025,edge)}
      for(let col=-5;col<=5;col++)box(face,col*radius*.105,y+hh/2,radius+.025,.018,hh,.04,silver);
      for(const x of [-.835,.835]){box(face,x*radius,y+hh/2,.835*radius,.08,hh,.08,silver);box(face,x*radius,y+hh-.28,.835*radius,.4,.09,.4,silver)}
     }
+    if(tier<tiers.length-1){const next=w*tiers[tier+1];for(let side=0;side<4;side++){const face=new T.Group();face.rotation.y=side*Math.PI/2;g.add(face);for(const sign of [-1,1])tube(face,[new T.Vector3(sign*.62*radius,y+hh,radius+.15),new T.Vector3(sign*.62*next,y+hh,next+.15)],.032,edge)}}
     y+=hh;
    }
    // Recessed terrace crown continues the sculpted shaft profile.
    for(let tier=0;tier<7;tier++){
     const radius=w*(.30-tier*.038),hh=h*.012;
-    section(radius,hh,y,glazing);section(radius*1.07,.12,y,silver);
+    section(radius,hh,y,glazing);section(radius*1.07,.12,y,crownMetal);
     for(let side=0;side<4;side++){const face=new T.Group();face.rotation.y=side*Math.PI/2;g.add(face);for(let col=-3;col<=3;col++){box(face,col*radius*.18,y+hh/2,radius+.03,.025,hh,.055,silver)}box(face,0,y+hh*.52,radius+.045,radius*1.24,.035,.06,silver);for(const sign of [-1,1])box(face,sign*radius*.62,y+hh/2,radius+.08,.035,hh,.04,edge)}
     y+=hh;
    }
    // Four splayed metal fins surrounding the needle mast.
-   for(let k=0;k<4;k++){const a=k*Math.PI/2+Math.PI/4;const fin=new T.Shape();fin.moveTo(.17,0);fin.lineTo(.95,h*.027);fin.lineTo(.66,h*.029);fin.lineTo(.10,h*.012);fin.closePath();const geo=new T.ExtrudeGeometry(fin,{depth:.10,bevelEnabled:false});const mesh=new T.Mesh(geo,silver);mesh.position.y=y;mesh.rotation.y=a;g.add(mesh)}
-   const mastHeight=h-y;const mast=new T.Mesh(new T.CylinderGeometry(.025,.16,mastHeight,12),silver);mast.position.y=y+mastHeight/2;g.add(mast);
+   for(let k=0;k<4;k++){const a=k*Math.PI/2+Math.PI/4;const fin=new T.Shape();fin.moveTo(.17,0);fin.lineTo(.95,h*.027);fin.lineTo(.66,h*.029);fin.lineTo(.10,h*.012);fin.closePath();const geo=new T.ExtrudeGeometry(fin,{depth:.10,bevelEnabled:false});const mesh=new T.Mesh(geo,crownMetal);mesh.position.y=y;mesh.rotation.y=a;g.add(mesh)}
+   const mastHeight=h-y;const mast=new T.Mesh(new T.CylinderGeometry(.025,.16,mastHeight,12),crownMetal);mast.position.y=y+mastHeight/2;g.add(mast);
    // Low limestone entrance block with horizontal glazing and roof louvers.
    const podium=new T.MeshStandardMaterial({color:'#aaa99c',roughness:.78});
    box(g,0,1.1,0,w*.94,2.2,w*.94,podium);
