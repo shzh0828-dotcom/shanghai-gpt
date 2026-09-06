@@ -88,6 +88,19 @@ export function refineHeroBuildings(groups:Map<string,T.Group>){
     box(g,w/2+.12,1.65,0,.12,2.7,5.6,dark);for(const z of [-2.1,-.7,.7,2.1]){cylinder(g,w/2+.62,1.65,z,.2,2.8,stone);box(g,w/2+.62,3.1,z,.65,.18,.65,stone)}box(g,w/2+.55,3.35,0,1.2,.35,6,stone);
     cylinder(g,tx,h+1.7,0,.035,2.4,metal);const flag=new T.Mesh(new T.PlaneGeometry(.95,.6),new T.MeshStandardMaterial({color:'#c62b25',side:T.DoubleSide,roughness:.8}));flag.position.set(tx+.48,h+2.35,0);g.add(flag);
    }
+   if(id==='hsbc'){
+    const stone=new T.MeshStandardMaterial({color:'#c7bba5',roughness:.83,emissive:'#ffd398',emissiveIntensity:0});glow.push({material:stone,strength:.38});
+    const tx=w*.2;
+    // Raised drum with paired pilasters, recessed openings, and projecting entablature.
+    for(let k=0;k<16;k++){const a=k*Math.PI/8,x=tx+Math.cos(a)*4.55,z=Math.sin(a)*4.55;cylinder(g,x,h*.78,z,.12,2,stone);const window=box(g,tx+Math.cos(a)*4.49,h*.77,Math.sin(a)*4.49,.46,1.1,.09,dark);window.rotation.y=Math.PI/2-a;}
+    for(const [y,r]of [[h*.69,4.65],[h*.84,4.75]])cylinder(g,tx,y,0,r,.18,stone);
+    // Small roof lantern and finial above the shallow main dome.
+    cylinder(g,tx,h*.82+2.4,0,.85,.5,stone);cylinder(g,tx,h*.82+2.8,0,.6,.55,dark);cylinder(g,tx,h*.82+3.12,0,1.05,.12,stone);cylinder(g,tx,h*.82+3.65,0,.12,1,stone);
+    for(let z=-d*.25;z<=d*.25;z+=2.2){cylinder(g,w/2+.77,h*.35,z,.42,h*.42,stone);for(const y of [h*.14,h*.55]){cylinder(g,w/2+.77,y,z,.58,.18,stone);box(g,w/2+.77,y+.15,z,1,.16,1,stone)}}
+    for(let z=-d/2+1.4;z<d/2;z+=1.5){if(Math.abs(z)<d*.29)continue;for(let y=2.6;y<base-.4;y+=1.4){box(g,w/2+.17,y,z,.07,.85,.48,dark);box(g,w/2+.25,y+.5,z,.22,.12,.75,stone);box(g,w/2+.25,y-.48,z,.25,.1,.75,stone)}}
+    for(let z=-d/2+.5;z<d/2;z+=.42)box(g,w/2+.35,base+.75,z,.15,.55,.12,stone);
+    box(g,w/2+.38,base+1.07,0,.35,.15,d,stone);
+   }
    if(id==='hsbc')for(let k=0;k<24;k++){const a=k*Math.PI/12;tube(g,Array.from({length:20},(_,i)=>{const t=i/19*Math.PI/2;return new T.Vector3(w*.2+4.66*Math.cos(t)*Math.cos(a),h*.82+2.24*Math.sin(t),4.66*Math.cos(t)*Math.sin(a))}),.028,warm)}
    // Local upward-facing luminaires give cornices and columns real shading.
    for(const z of [-d*.3,d*.3]){const light=new T.SpotLight('#ffd39a',0,base*2,Math.PI*.3,.65,1.4);light.position.set(w/2+3,.8,z);light.target.position.set(w/2,base*.7,z);g.add(light,light.target);lights.push(light)}
