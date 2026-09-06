@@ -14,9 +14,28 @@ export function refineHeroBuildings(groups:Map<string,T.Group>){
  function tube(g:T.Object3D,p:T.Vector3[],r:number,m:T.Material){const o=new T.Mesh(new T.TubeGeometry(new T.CatmullRomCurve3(p),Math.max(8,p.length),r,4,false),m);g.add(o);return o}
  function cylinder(g:T.Object3D,x:number,y:number,z:number,r:number,h:number,m:T.Material){const o=new T.Mesh(new T.CylinderGeometry(r,r,h,24),m);o.position.set(x,y,z);g.add(o);return o}
  function curtain(){const c=document.createElement('canvas');c.width=512;c.height=512;const a=c.getContext('2d')!;a.fillStyle='#768f9d';a.fillRect(0,0,512,512);for(let row=0;row<16;row++)for(let col=0;col<8;col++){const v=(row*31+col*13)%19+22;a.fillStyle=`rgb(${76+v},${103+v},${121+v})`;a.fillRect(col*64+2,row*32+2,60,28);a.fillStyle='rgba(218,234,240,.24)';a.fillRect(col*64+3,row*32+3,2,26)}const map=new T.CanvasTexture(c);map.colorSpace=T.SRGBColorSpace;map.wrapS=map.wrapT=T.RepeatWrapping;map.repeat.set(5,8);const e=document.createElement('canvas');e.width=e.height=512;const b=e.getContext('2d')!;b.fillStyle='#000';b.fillRect(0,0,512,512);for(let r=0;r<16;r++)for(let k=0;k<8;k++)if((r*19+k*7)%11<3){b.fillStyle=['#dbc9ac','#9aafbe','#726f61','#b3c4ca'][(r*7+k*3)%4];b.fillRect(k*64+3,r*32+3,58,26)}const em=new T.CanvasTexture(e);em.colorSpace=T.SRGBColorSpace;em.wrapS=em.wrapT=T.RepeatWrapping;em.repeat.copy(map.repeat);const m=new T.MeshPhysicalMaterial({color:'#deeff9',map,metalness:.38,roughness:.24,clearcoat:1,clearcoatRoughness:.16,emissive:'#92cfff',emissiveMap:em,emissiveIntensity:0});glow.push({material:m,strength:1.7});return m}
- for(const id of ['shanghai','swfc','pearl','customs','hsbc']){
+ for(const id of ['shanghai','swfc','pearl','jinmao','customs','hsbc']){
   const g=groups.get(id)!,l=landmarks.find(v=>v.id===id)!,{w,h,d}=l;
-  if(['shanghai','swfc','pearl'].includes(id))g.clear();
+  if(['shanghai','swfc','pearl','jinmao'].includes(id))g.clear();
+  if(id==='jinmao'){
+   const glazing=curtain();glazing.color.set('#a9b6b9');glazing.emissive.set('#e8d4ac');
+   const silver=new T.MeshStandardMaterial({color:'#a9aaa3',metalness:.65,roughness:.36});
+   const edge=luminous('#ffe0a2',1.7);
+   const tiers=[.50,.49,.48,.46,.44,.42,.39,.36,.32,.28,.23,.17];
+   const heights=[10,9,8,8,7,7,6,6,5,5,4,3];let y=0;const unitHeight=h*.86/heights.reduce((a,b)=>a+b,0);
+   for(let tier=0;tier<tiers.length;tier++){
+    const radius=w*tiers[tier],hh=heights[tier]*unitHeight;
+    const body=new T.Mesh(new T.CylinderGeometry(radius*.985,radius,hh,8),glazing);body.position.y=y+hh/2;body.rotation.y=Math.PI/8;g.add(body);
+    const rim=new T.Mesh(new T.CylinderGeometry(radius*1.018,radius*1.018,.16,8),silver);rim.position.y=y+hh;rim.rotation.y=Math.PI/8;g.add(rim);
+    for(let floor=1;floor<heights[tier];floor++){const band=new T.Mesh(new T.CylinderGeometry(radius*.994,radius*.994,.055,8),silver);band.position.y=y+floor*unitHeight;band.rotation.y=Math.PI/8;g.add(band)}
+    for(let k=0;k<8;k++){const a=k*Math.PI/4+Math.PI/8;const x=Math.sin(a)*radius,z=Math.cos(a)*radius;tube(g,[new T.Vector3(x,y,z),new T.Vector3(x*.985,y+hh,z*.985)],.075,silver);tube(g,[new T.Vector3(x*1.004,y,z*1.004),new T.Vector3(x*.989,y+hh,z*.989)],.025,edge);
+     const b=a+Math.PI/4;for(const f of [.25,.5,.75]){const xx=(Math.sin(a)*(1-f)+Math.sin(b)*f)*radius,zz=(Math.cos(a)*(1-f)+Math.cos(b)*f)*radius;box(g,xx,y+hh/2,zz,.028,hh,.028,silver)}}
+    y+=hh;
+   }
+   const crown=new T.Mesh(new T.ConeGeometry(w*.17,h*.105,8),silver);crown.position.y=y+h*.0525;crown.rotation.y=Math.PI/8;g.add(crown);
+   for(let k=0;k<8;k++){const a=k*Math.PI/4+Math.PI/8;tube(g,[new T.Vector3(Math.sin(a)*w*.17,y,Math.cos(a)*w*.17),new T.Vector3(0,h*.965,0)],.04,edge)}
+   cylinder(g,0,h*.98,0,.085,h*.04,silver);cylinder(g,0,.65,0,w*.51,1.3,silver);
+  }
   if(id==='shanghai'){
    const glass=curtain();glass.side=T.DoubleSide;
    function point(t:number,a:number){const r=w*.5*Math.pow(.55,t)*(1+.09*Math.cos(a*3));const turn=a+t*Math.PI*2/3;const crownBlend=T.MathUtils.smoothstep(t,.90,1);const lipDrop=8*(1-a/(Math.PI*2));return new T.Vector3(Math.cos(turn)*r,t*h-crownBlend*lipDrop,Math.sin(turn)*r)}
