@@ -1,3 +1,4 @@
+import { addCustomsStreet } from './customs-street';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
@@ -135,7 +136,7 @@ export function createScene(host:HTMLElement,onSelect:(id:string)=>void,onManual
  if(cargo){for(let row=0;row<3;row++)for(let col=0;col<2;col++)box(b,(col-.5)*1.2,1.15,row*2.5-3,1.1,.85,2.2,cargoColors[(row+col+i)%3]);box(b,0,1.5,4,width*.8,1.7,2,trim);box(b,0,2.2,3.85,width*.72,.55,1.8,glass)}else{for(let deck=0;deck<2;deck++){box(b,0,1+deck*.7,0,width*.83,.65,length*.62,trim);for(const side of [-1,1])box(b,side*width*.42,1+deck*.7,0,.035,.4,length*.55,glass)}box(b,0,2.15,0,width*.9,.15,length*.68,trim);for(const side of [-1,1])beam(b,new T.Vector3(side*width*.42,2.45,-2.6),new T.Vector3(side*width*.42,2.45,2.6),.035,gold)}
  const wm=new T.MeshBasicMaterial({color:'#c5d9ce',transparent:true,opacity:.19,depthWrite:false});wakeMaterials.push(wm);for(const side of [-1,1]){const wake=new T.Mesh(new T.PlaneGeometry(.3,length*.85),wm);wake.rotation.x=-Math.PI/2;wake.rotation.z=side*.18;wake.position.set(side*width*.7,-.33,length*.7);b.add(wake)}world.add(b);boats.push(b)}
  const cars:T.Group[]=[];for(let i=0;i<72;i++){const car=new T.Group();car.name='Vehicle '+(i+1);box(car,0,.3,0,.42,.3,1.05,i%4===0?gold:trim);box(car,0,.53,-.08,.37,.2,.55,glass);world.add(car);cars.push(car)}
- const skyline=addNightSkyline(world,groups);const refinement=addRefinements(world,scene,groups);const heroes=refineHeroBuildings(groups);pickables.length=0;for(const g of groups.values())g.traverse(o=>{if(o instanceof T.Mesh&&!pickables.includes(o))pickables.push(o)});
+ const skyline=addNightSkyline(world,groups);const refinement=addRefinements(world,scene,groups);const heroes=refineHeroBuildings(groups);const customsStreet=addCustomsStreet(world,groups);pickables.length=0;for(const g of groups.values())g.traverse(o=>{if(o instanceof T.Mesh&&!pickables.includes(o))pickables.push(o)});
  world.traverse(o=>{if(o instanceof T.Mesh){o.receiveShadow=true;if(o.parent?.userData.landmark)o.castShadow=true}});
  const selectRing=new T.Mesh(new T.RingGeometry(1,1.08,64),new T.MeshBasicMaterial({color:'#edbe71',side:T.DoubleSide,transparent:true,opacity:.8}));selectRing.rotation.x=-Math.PI/2;selectRing.visible=false;scene.add(selectRing);
  const labelLayer=document.createElement('div');labelLayer.className='scene-labels';host.appendChild(labelLayer);const labels=landmarks.map(l=>{const e=document.createElement('button');e.className='map-label';e.textContent=l.name;e.onclick=()=>onSelect(l.id);labelLayer.appendChild(e);return {l,e}});
@@ -155,7 +156,7 @@ export function createScene(host:HTMLElement,onSelect:(id:string)=>void,onManual
  if(paused&&flight)flight.start+=dt*1000;if(flight){const t=flight.duration===0?1:Math.min((now-flight.start)/flight.duration,1),e=t*t*(3-2*t);camera.position.lerpVectors(flight.from,flight.to,e);camera.position.y+=Math.sin(Math.PI*t)*170;controls.target.lerpVectors(flight.targetFrom,flight.targetTo,e);if(t===1)flight=null}
  controls.update();controls.target.x=T.MathUtils.clamp(controls.target.x,-293,376);controls.target.z=T.MathUtils.clamp(controls.target.z,-269,318);controls.target.y=T.MathUtils.clamp(controls.target.y,0,145);
 
- refinement.update(time,windowMat.emissiveIntensity);heroes.update(windowMat.emissiveIntensity);skyline.update(windowMat.emissiveIntensity);wakeMaterials.forEach((m,i)=>m.opacity=.14+Math.sin(time*1.5+i)*.035);
+ refinement.update(time,windowMat.emissiveIntensity);heroes.update(windowMat.emissiveIntensity);customsStreet.update(time);skyline.update(windowMat.emissiveIntensity);wakeMaterials.forEach((m,i)=>m.opacity=.14+Math.sin(time*1.5+i)*.035);
  cloudMaterial.opacity=T.MathUtils.lerp(cloudMaterial.opacity,lightMode==='day'?.88:lightMode==='sunset'?.42:.035,.035);cloudMaterial.color.set(lightMode==='sunset'?'#ffd6bf':'#ffffff');clouds.forEach((c,i)=>{const a=i*Math.PI*2/18+time*.0008;c.position.x=Math.cos(a)*780;c.position.z=Math.sin(a)*780});waveTexture.offset.set(time*.006,time*.003);for(const m of [contextStone,contextGlass,contextBrick])m.emissiveIntensity=windowMat.emissiveIntensity*.75;for(const m of pudongGlass)m.emissiveIntensity=windowMat.emissiveIntensity*1.65;
  // River centerline measured from mapped Huangpu water geometry; separate lanes.
  const riverRoute=mapData.riverRoute.map(p=>new T.Vector3(p[0],0,p[1]));
