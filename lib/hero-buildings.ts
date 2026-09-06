@@ -54,11 +54,11 @@ export function refineHeroBuildings(groups:Map<string,T.Group>){
    cylinder(g,0,1.3,0,w*.62,2.6,glass);
   }
   if(id==='swfc'){
-   const glass=curtain();const s=new T.Shape();s.moveTo(-w/2,0);s.lineTo(w/2,0);s.lineTo(w*.32,h);s.lineTo(-w*.32,h);s.closePath();const opening=new T.Path();opening.moveTo(-w*.23,h-14);opening.lineTo(-w*.265,h-3);opening.lineTo(w*.265,h-3);opening.lineTo(w*.23,h-14);opening.closePath();s.holes.push(opening);const geo=new T.ExtrudeGeometry(s,{depth:d,bevelEnabled:false});geo.translate(0,0,-d/2);const uv=geo.attributes.uv;for(let i=0;i<uv.count;i++)uv.setXY(i,uv.getX(i)/w,uv.getY(i)/h);g.add(new T.Mesh(geo,glass));
+   const glass=curtain();const s=new T.Shape();s.moveTo(-w/2,0);s.lineTo(w/2,0);s.lineTo(w*.32,h);s.lineTo(-w*.32,h);s.closePath();const opening=new T.Path();opening.moveTo(-w*.23,h-14);opening.lineTo(-w*.265,h-3);opening.lineTo(w*.265,h-3);opening.lineTo(w*.23,h-14);opening.closePath();s.holes.push(opening);const geo=new T.ExtrudeGeometry(s,{depth:d,bevelEnabled:false});geo.translate(0,0,-d/2);const uv=geo.attributes.uv;for(let i=0;i<uv.count;i++)uv.setXY(i,uv.getX(i)/w,uv.getY(i)/h);const sideGlass=glass.clone();sideGlass.map=null;sideGlass.emissiveMap=null;sideGlass.color.set('#91adb9');sideGlass.roughness=.38;sideGlass.metalness=.18;glow.push({material:sideGlass,strength:.12});g.add(new T.Mesh(geo,[glass,sideGlass]));
    for(const side of [-1,1]){
     const z=side*(d/2+.025);for(let floor=1;floor<101;floor++){const y=floor*h/101;if(y>h-14&&y<h-3)continue;box(g,0,y,z,w*(1-.36*y/h),.035,.045,metal)}
     for(let i=-12;i<=12;i++){const x=i*w/26;const top=Math.min(h-14,h*(.5-Math.abs(x)/w)/.18);if(top>0)box(g,x,top/2,z,.025,top,.045,metal)}
-    for(const sign of [-1,1])tube(g,[new T.Vector3(sign*w/2,0,z),new T.Vector3(sign*w*.32,h,z)],.065,cool);
+    // Clean tapered edges: no full-height overlay strips.
     // Keep the opening framed by its glass geometry without added horizontal bands.
    }box(g,0,1,0,w*1.15,2,d*1.2,glass);
   }
