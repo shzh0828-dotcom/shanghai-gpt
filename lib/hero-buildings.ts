@@ -39,15 +39,16 @@ export function refineHeroBuildings(groups:Map<string,T.Group>){
     }
     y+=hh;
    }
-   // Stacked octagonal lantern and projecting ledges, replacing the plain cone.
+   // Recessed terrace crown continues the sculpted shaft profile.
    for(let tier=0;tier<7;tier++){
-    const radius=w*(.30-tier*.039),hh=h*.0135;
-    const lantern=new T.Mesh(new T.CylinderGeometry(radius*.9,radius,hh,8),silver);lantern.rotation.y=Math.PI/8;lantern.position.y=y+hh/2;g.add(lantern);
-    const ledge=new T.Mesh(new T.CylinderGeometry(radius*1.075,radius*1.075,.12,8),silver);ledge.rotation.y=Math.PI/8;ledge.position.y=y;g.add(ledge);
-    for(let k=0;k<8;k++){const a=k*Math.PI/4+Math.PI/8;const x=Math.sin(a)*radius,z=Math.cos(a)*radius;tube(g,[new T.Vector3(x,y,z),new T.Vector3(x*.9,y+hh,z*.9)],.045,edge)}y+=hh;
+    const radius=w*(.30-tier*.038),hh=h*.012;
+    section(radius,hh,y,glazing);section(radius*1.07,.12,y,silver);
+    for(let side=0;side<4;side++){const face=new T.Group();face.rotation.y=side*Math.PI/2;g.add(face);for(let col=-3;col<=3;col++){box(face,col*radius*.18,y+hh/2,radius+.03,.025,hh,.055,silver)}box(face,0,y+hh*.52,radius+.045,radius*1.24,.035,.06,silver);for(const sign of [-1,1])box(face,sign*radius*.62,y+hh/2,radius+.08,.035,hh,.04,edge)}
+    y+=hh;
    }
-   for(let k=0;k<4;k++){const a=k*Math.PI/2+Math.PI/4;tube(g,[new T.Vector3(Math.cos(a)*.6,y,Math.sin(a)*.6),new T.Vector3(Math.cos(a)*.28,h*.98,Math.sin(a)*.28)],.055,silver)}
-   cylinder(g,0,h*.978,0,.065,h*.044,silver);
+   // Four splayed metal fins surrounding the needle mast.
+   for(let k=0;k<4;k++){const a=k*Math.PI/2+Math.PI/4;const fin=new T.Shape();fin.moveTo(.17,0);fin.lineTo(.95,h*.027);fin.lineTo(.66,h*.029);fin.lineTo(.10,h*.012);fin.closePath();const geo=new T.ExtrudeGeometry(fin,{depth:.10,bevelEnabled:false});const mesh=new T.Mesh(geo,silver);mesh.position.y=y;mesh.rotation.y=a;g.add(mesh)}
+   const mastHeight=h-y;const mast=new T.Mesh(new T.CylinderGeometry(.025,.16,mastHeight,12),silver);mast.position.y=y+mastHeight/2;g.add(mast);
    // Low limestone entrance block with horizontal glazing and roof louvers.
    const podium=new T.MeshStandardMaterial({color:'#aaa99c',roughness:.78});
    box(g,0,1.1,0,w*.94,2.2,w*.94,podium);
