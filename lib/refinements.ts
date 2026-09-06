@@ -82,7 +82,7 @@ export function addRefinements(world:T.Group,scene:T.Scene,groups:Map<string,T.G
  const reflection=new Reflector(new T.ShapeGeometry(waterShapes),{color:0x819397,textureWidth:1024,textureHeight:1024,clipBias:.003,multisample:0});
  reflection.rotation.x=-Math.PI/2;reflection.position.y=.19;reflection.name='Browser-only river reflection';scene.add(reflection);
  const rm=reflection.material as T.ShaderMaterial;rm.transparent=true;rm.depthWrite=false;rm.uniforms.waveTime={value:0};rm.uniforms.reflectOpacity={value:.17};
- rm.fragmentShader='uniform float waveTime; uniform float reflectOpacity;\n'+rm.fragmentShader.replace('texture2DProj( tDiffuse, vUv )','texture2DProj( tDiffuse, vUv + vec4(sin(vUv.y*90.0+waveTime)*0.0018*vUv.w, cos(vUv.x*70.0+waveTime*.7)*0.0009*vUv.w, 0.0, 0.0) )').replace('blendOverlay( base.rgb, color ), 1.0','blendOverlay( base.rgb, color ), reflectOpacity');
+ rm.fragmentShader='uniform float waveTime; uniform float reflectOpacity;\n'+rm.fragmentShader.replace('texture2DProj( tDiffuse, vUv )','texture2DProj( tDiffuse, vUv + vec4(sin(vUv.y/vUv.w*190.0+waveTime)*0.0032*vUv.w, cos(vUv.x/vUv.w*110.0+waveTime*.7)*0.0015*vUv.w, 0.0, 0.0) )').replace('blendOverlay( base.rgb, color ), 1.0','blendOverlay( base.rgb, color ), reflectOpacity * (0.55 + 0.45 * pow(0.5 + 0.5 * sin(vUv.y / vUv.w * 950.0 + sin(vUv.x / vUv.w * 180.0 + waveTime) * 2.0 + waveTime * 2.2), 3.0))');
  // Streetscape follows mapped paths near the named destinations.
  const pedestrians:T.Group[]=[];const pedestrianPaths:T.Vector3[][]=[];let crossingCount=0,busStops=0;const signalSites:number[][]=[];
  const near=(p:number[])=>p[0]>-185&&p[0]<245&&p[1]>-230&&p[1]<230;

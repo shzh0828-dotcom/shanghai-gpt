@@ -13,7 +13,7 @@ export function refineHeroBuildings(groups:Map<string,T.Group>){
  function box(g:T.Object3D,x:number,y:number,z:number,w:number,h:number,d:number,m:T.Material){const o=new T.Mesh(unit,m);o.position.set(x,y,z);o.scale.set(w,h,d);g.add(o);return o}
  function tube(g:T.Object3D,p:T.Vector3[],r:number,m:T.Material){const o=new T.Mesh(new T.TubeGeometry(new T.CatmullRomCurve3(p),Math.max(8,p.length),r,4,false),m);g.add(o);return o}
  function cylinder(g:T.Object3D,x:number,y:number,z:number,r:number,h:number,m:T.Material){const o=new T.Mesh(new T.CylinderGeometry(r,r,h,24),m);o.position.set(x,y,z);g.add(o);return o}
- function curtain(){const c=document.createElement('canvas');c.width=512;c.height=512;const a=c.getContext('2d')!;a.fillStyle='#768f9d';a.fillRect(0,0,512,512);for(let row=0;row<16;row++)for(let col=0;col<8;col++){const v=(row*31+col*13)%19+22;a.fillStyle=`rgb(${76+v},${103+v},${121+v})`;a.fillRect(col*64+2,row*32+2,60,28);a.fillStyle='rgba(218,234,240,.24)';a.fillRect(col*64+3,row*32+3,2,26)}const map=new T.CanvasTexture(c);map.colorSpace=T.SRGBColorSpace;map.wrapS=map.wrapT=T.RepeatWrapping;map.repeat.set(5,8);const e=document.createElement('canvas');e.width=e.height=512;const b=e.getContext('2d')!;b.fillStyle='#000';b.fillRect(0,0,512,512);for(let r=0;r<16;r++)for(let k=0;k<8;k++)if((r*19+k*7)%11<3){b.fillStyle=(r+k)%3?'#e1c8a3':'#bacbd6';b.fillRect(k*64+3,r*32+3,58,26)}const em=new T.CanvasTexture(e);em.colorSpace=T.SRGBColorSpace;em.wrapS=em.wrapT=T.RepeatWrapping;em.repeat.copy(map.repeat);const m=new T.MeshPhysicalMaterial({color:'#deeff9',map,metalness:.38,roughness:.24,clearcoat:1,clearcoatRoughness:.16,emissive:'#92cfff',emissiveMap:em,emissiveIntensity:0});glow.push({material:m,strength:1.7});return m}
+ function curtain(){const c=document.createElement('canvas');c.width=512;c.height=512;const a=c.getContext('2d')!;a.fillStyle='#768f9d';a.fillRect(0,0,512,512);for(let row=0;row<16;row++)for(let col=0;col<8;col++){const v=(row*31+col*13)%19+22;a.fillStyle=`rgb(${76+v},${103+v},${121+v})`;a.fillRect(col*64+2,row*32+2,60,28);a.fillStyle='rgba(218,234,240,.24)';a.fillRect(col*64+3,row*32+3,2,26)}const map=new T.CanvasTexture(c);map.colorSpace=T.SRGBColorSpace;map.wrapS=map.wrapT=T.RepeatWrapping;map.repeat.set(5,8);const e=document.createElement('canvas');e.width=e.height=512;const b=e.getContext('2d')!;b.fillStyle='#000';b.fillRect(0,0,512,512);for(let r=0;r<16;r++)for(let k=0;k<8;k++)if((r*19+k*7)%11<3){b.fillStyle=['#dbc9ac','#9aafbe','#726f61','#b3c4ca'][(r*7+k*3)%4];b.fillRect(k*64+3,r*32+3,58,26)}const em=new T.CanvasTexture(e);em.colorSpace=T.SRGBColorSpace;em.wrapS=em.wrapT=T.RepeatWrapping;em.repeat.copy(map.repeat);const m=new T.MeshPhysicalMaterial({color:'#deeff9',map,metalness:.38,roughness:.24,clearcoat:1,clearcoatRoughness:.16,emissive:'#92cfff',emissiveMap:em,emissiveIntensity:0});glow.push({material:m,strength:1.7});return m}
  for(const id of ['shanghai','swfc','pearl','customs','hsbc']){
   const g=groups.get(id)!,l=landmarks.find(v=>v.id===id)!,{w,h,d}=l;
   if(['shanghai','swfc','pearl'].includes(id))g.clear();
@@ -36,7 +36,7 @@ export function refineHeroBuildings(groups:Map<string,T.Group>){
    }box(g,0,1,0,w*1.15,2,d*1.2,glass);
   }
   if(id==='pearl'){
-   const concrete=new T.MeshStandardMaterial({color:'#c8bca4',roughness:.82,metalness:.03,emissive:'#ffc16a',emissiveIntensity:0});glow.push({material:concrete,strength:.95});
+   const concrete=new T.MeshStandardMaterial({color:'#c8bca4',roughness:.82,metalness:.03,emissive:'#ffc16a',emissiveIntensity:0});glow.push({material:concrete,strength:.3});
    const cap=new T.MeshStandardMaterial({color:'#b9bdb7',roughness:.55,metalness:.22});
    const pearl=new T.MeshPhysicalMaterial({color:'#a96782',metalness:.32,roughness:.36,clearcoat:.7,emissive:'#ff4f9d',emissiveIntensity:0});glow.push({material:pearl,strength:.45});
    const bead=(x:number,y:number,z:number,r:number,m:T.Material)=>{const o=new T.Mesh(new T.SphereGeometry(r,20,12),m);o.position.set(x,y,z);g.add(o)};
@@ -62,7 +62,7 @@ export function refineHeroBuildings(groups:Map<string,T.Group>){
   if(id==='customs'||id==='hsbc'){
    // Independent limestone finish, with fine masonry joints and a softly lit stone surface.
    const c=document.createElement('canvas');c.width=c.height=256;const a=c.getContext('2d')!;a.fillStyle='#c5b9a5';a.fillRect(0,0,256,256);for(let y=0;y<256;y+=32){a.fillStyle='#9d9587';a.fillRect(0,y,256,1);for(let x=(y/32%2)*32;x<256;x+=64)a.fillRect(x,y,1,32)}const texture=new T.CanvasTexture(c);texture.wrapS=texture.wrapT=T.RepeatWrapping;texture.repeat.set(3,2);texture.colorSpace=T.SRGBColorSpace;
-   g.traverse(o=>{if(!(o instanceof T.Mesh)||Array.isArray(o.material))return;const old=o.material as T.MeshStandardMaterial;if(old.metalness<.2&& !old.emissive?.getHex()){const m=old.clone();m.map=texture;m.bumpMap=texture;m.bumpScale=.035;m.roughness=.86;m.color.set('#e2d7c2');m.emissive.set('#eabf85');glow.push({material:m,strength:.30});o.material=m}});
+   g.traverse(o=>{if(!(o instanceof T.Mesh)||Array.isArray(o.material))return;const old=o.material as T.MeshStandardMaterial;if(old.metalness<.2&& !old.emissive?.getHex()){const m=old.clone();m.map=texture;m.bumpMap=texture;m.bumpScale=.035;m.roughness=.86;m.color.set('#e2d7c2');m.emissive.set('#eabf85');glow.push({material:m,strength:.09});o.material=m}});
    const base=h*(id==='customs'?.57:.65);
    for(let z=-d/2+1;z<d/2;z+=1.3){box(g,w/2+.12,base*.57,z,.12,base*.55,.09,metal);box(g,w/2+.18,base*.87,z,.18,.12,.8,warm)}
    if(id==='customs'){
@@ -70,7 +70,7 @@ export function refineHeroBuildings(groups:Map<string,T.Group>){
     for(let side=0;side<4;side++){const face=new T.Group();face.position.set(w*.27,h*.825,0);face.rotation.y=side*Math.PI/2;g.add(face);const disk=new T.Mesh(new T.CircleGeometry(1.38,64),dial);disk.position.z=2.49;face.add(disk);for(let tick=0;tick<60;tick++){const a=tick*Math.PI/30;const mark=box(face,Math.sin(a)*1.18,Math.cos(a)*1.18,2.505,tick%5===0?.055:.025,tick%5===0?.18:.075,.018,dark);mark.rotation.z=-a}box(face,0,.4,2.53,.055,.85,.025,dark);const hand=box(face,.35,.1,2.54,.74,.065,.025,dark);hand.rotation.z=.28;}
    }
    if(id==='customs'){
-    const stone=new T.MeshStandardMaterial({color:'#c2b6a1',roughness:.85,emissive:'#ffc47b',emissiveIntensity:0});glow.push({material:stone,strength:.27});
+    const stone=new T.MeshStandardMaterial({color:'#c2b6a1',roughness:.85,emissive:'#ffc47b',emissiveIntensity:0});glow.push({material:stone,strength:.16});
     const tx=w*.27;
     // Four-sided belfry, tall recessed windows and projecting stone trim.
     for(let side=0;side<4;side++){const face=new T.Group();face.position.x=tx;face.rotation.y=side*Math.PI/2;g.add(face);
@@ -89,7 +89,7 @@ export function refineHeroBuildings(groups:Map<string,T.Group>){
     cylinder(g,tx,h+1.7,0,.035,2.4,metal);const flag=new T.Mesh(new T.PlaneGeometry(.95,.6),new T.MeshStandardMaterial({color:'#c62b25',side:T.DoubleSide,roughness:.8}));flag.position.set(tx+.48,h+2.35,0);g.add(flag);
    }
    if(id==='hsbc'){
-    const stone=new T.MeshStandardMaterial({color:'#c7bba5',roughness:.83,emissive:'#ffd398',emissiveIntensity:0});glow.push({material:stone,strength:.26});
+    const stone=new T.MeshStandardMaterial({color:'#c7bba5',roughness:.83,emissive:'#ffd398',emissiveIntensity:0});glow.push({material:stone,strength:.15});
     const tx=w*.2;
     // Raised drum with paired pilasters, recessed openings, and projecting entablature.
     for(let k=0;k<16;k++){const a=k*Math.PI/8,x=tx+Math.cos(a)*4.55,z=Math.sin(a)*4.55;cylinder(g,x,h*.78,z,.12,2,stone);const window=box(g,tx+Math.cos(a)*4.49,h*.77,Math.sin(a)*4.49,.46,1.1,.09,dark);window.rotation.y=Math.PI/2-a;}
