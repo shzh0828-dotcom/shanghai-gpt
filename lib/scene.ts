@@ -129,7 +129,7 @@ export function createScene(host:HTMLElement,onSelect:(id:string)=>void,onManual
  box(world,(customsPlace.x+hsbcPlace.x)/2,.22,laneZ,23,.08,2.2,road);
  // The city follows OpenStreetMap footprints. Missing heights are explicitly estimated.
  const landmarkIds=new Set(Object.values(mapData.locations).map(l=>l.osmId));let count=0;
- const swfcDuplicateParts=new Set(['10691100',...Array.from({length:12},(_,i)=>String(279942892+i))]);
+ const swfcDuplicateParts=new Set(['188377486','376016310','376016312','376075961','10691100',...Array.from({length:12},(_,i)=>String(279942892+i))]);
  for(const building of mapData.buildings){if(swfcDuplicateParts.has(building.id)||landmarkIds.has(building.id)||building.id==='164970992')continue;const xs=building.points.map(p=>p[0]),zs=building.points.map(p=>p[1]);const x=(Math.min(...xs)+Math.max(...xs))/2,z=(Math.min(...zs)+Math.max(...zs))/2;if(landmarks.some(l=>l.kind!=='street'&&Math.abs(x-l.x)<l.w*.48&&Math.abs(z-l.z)<l.d*.48))continue;const m=building.height>15?(x>55?pudongGlass[Number(building.id)%pudongGlass.length]:contextGlass):(count++%4===0?contextBrick:contextStone);polygon(building.points,building.height,0,m);polygon(building.points,0,building.height+.02,stone);if(building.height>8){const w=(Math.max(...xs)-Math.min(...xs))*.3,d=(Math.max(...zs)-Math.min(...zs))*.3;if(w>1&&d>1)box(world,x,building.height+.5,z,w,1,d,dark)}}
  let seed=12;const rand=()=>{seed=(seed*16807)%2147483647;return(seed-1)/2147483646};
  // Trees follow mapped pedestrian routes, with varied crowns rather than identical balls.

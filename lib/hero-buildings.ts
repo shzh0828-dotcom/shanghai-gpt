@@ -21,15 +21,22 @@ export function refineHeroBuildings(groups:Map<string,T.Group>){
    const glazing=curtain();glazing.color.set('#66777b');glazing.emissive.set('#e8d4ac');
    const silver=new T.MeshStandardMaterial({color:'#a9aaa3',metalness:.65,roughness:.36});
    const edge=luminous('#ffe0a2',1.7);
+   // Re-entrant corners and projecting piers give the shaft its sculpted profile.
+   const outline:T.Vector2[]=[];
+   for(let side=0;side<4;side++)for(const [x,z]of [[-.62,1],[.62,1],[.62,.83],[.83,.83],[.83,.62],[1,.62]] as const){const a=-side*Math.PI/2;outline.push(new T.Vector2(x*Math.cos(a)-z*Math.sin(a),x*Math.sin(a)+z*Math.cos(a)))}
+   function section(radius:number,height:number,base:number,material:T.Material){const shape=new T.Shape(outline.map(p=>p.clone().multiplyScalar(radius)));const geo=new T.ExtrudeGeometry(shape,{depth:height,bevelEnabled:false});geo.rotateX(-Math.PI/2);const uv=geo.attributes.uv;for(let i=0;i<uv.count;i++)uv.setXY(i,uv.getX(i)/(radius*2),uv.getY(i)/Math.max(height,1));const mesh=new T.Mesh(geo,material);mesh.position.y=base;g.add(mesh);return mesh}
    const tiers=[.46,.455,.45,.44,.43,.415,.40,.385,.37,.355,.34,.325];
    const heights=[14,12,10,9,8,7,6,5,4,3,2,2];let y=0;const unitHeight=h*.86/heights.reduce((a,b)=>a+b,0);
    for(let tier=0;tier<tiers.length;tier++){
     const radius=w*tiers[tier],hh=heights[tier]*unitHeight;
-    const body=new T.Mesh(new T.CylinderGeometry(radius*.985,radius,hh,8),glazing);body.position.y=y+hh/2;body.rotation.y=Math.PI/8;g.add(body);
-    const rim=new T.Mesh(new T.CylinderGeometry(radius*1.018,radius*1.018,.16,8),silver);rim.position.y=y+hh;rim.rotation.y=Math.PI/8;g.add(rim);
-    for(let floor=1;floor<heights[tier];floor++){const band=new T.Mesh(new T.CylinderGeometry(radius*.994,radius*.994,.055,8),silver);band.position.y=y+floor*unitHeight;band.rotation.y=Math.PI/8;g.add(band)}
-    for(let k=0;k<8;k++){const a=k*Math.PI/4+Math.PI/8;const x=Math.sin(a)*radius,z=Math.cos(a)*radius;tube(g,[new T.Vector3(x,y,z),new T.Vector3(x*.985,y+hh,z*.985)],.075,silver);tube(g,[new T.Vector3(x*1.004,y,z*1.004),new T.Vector3(x*.989,y+hh,z*.989)],.025,edge);
-     const b=a+Math.PI/4;for(const f of [.25,.5,.75]){const xx=(Math.sin(a)*(1-f)+Math.sin(b)*f)*radius,zz=(Math.cos(a)*(1-f)+Math.cos(b)*f)*radius;box(g,xx,y+hh/2,zz,.028,hh,.028,silver)}}
+    section(radius,hh,y,glazing);section(radius*1.014,.12,y+hh,silver);
+    for(let floor=1;floor<heights[tier];floor++)section(radius*1.003,.045,y+floor*unitHeight,silver);
+    for(let side=0;side<4;side++){
+     const a=side*Math.PI/2;const face=new T.Group();face.rotation.y=a;g.add(face);
+     for(const x of [-.62,.62]){box(face,x*radius,y+hh/2,radius+.045,.14,hh,.18,silver);box(face,x*radius,y+hh/2,radius+.145,.035,hh,.025,edge)}
+     for(let col=-5;col<=5;col++)box(face,col*radius*.105,y+hh/2,radius+.025,.018,hh,.04,silver);
+     for(const x of [-.835,.835]){box(face,x*radius,y+hh/2,.835*radius,.08,hh,.08,silver);box(face,x*radius,y+hh-.28,.835*radius,.4,.09,.4,silver)}
+    }
     y+=hh;
    }
    // Stacked octagonal lantern and projecting ledges, replacing the plain cone.
@@ -41,9 +48,13 @@ export function refineHeroBuildings(groups:Map<string,T.Group>){
    }
    for(let k=0;k<4;k++){const a=k*Math.PI/2+Math.PI/4;tube(g,[new T.Vector3(Math.cos(a)*.6,y,Math.sin(a)*.6),new T.Vector3(Math.cos(a)*.28,h*.98,Math.sin(a)*.28)],.055,silver)}
    cylinder(g,0,h*.978,0,.065,h*.044,silver);
-   // Narrow recessed vertical bays emphasize the tall, straight shaft.
-   for(let k=0;k<4;k++){const a=k*Math.PI/2;for(let tier=0,base=0;tier<tiers.length;tier++){const radius=w*tiers[tier]*.925,hh=heights[tier]*unitHeight;const bay=box(g,Math.sin(a)*radius,base+hh/2,Math.cos(a)*radius,.4,hh,.055,dark);bay.rotation.y=a;base+=hh}}
-   cylinder(g,0,.65,0,w*.47,1.3,silver);
+   // Low limestone entrance block with horizontal glazing and roof louvers.
+   const podium=new T.MeshStandardMaterial({color:'#aaa99c',roughness:.78});
+   box(g,0,1.1,0,w*.94,2.2,w*.94,podium);
+   box(g,0,2.1,w*.30,w*.92,4.2,w*.38,podium);
+   for(let x=-w*.4;x<=w*.4;x+=.8){box(g,x,2.8,w*.493,.32,.75,.03,dark);box(g,x,1.5,w*.493,.32,.75,.03,dark)}
+   for(let x=-w*.4;x<w*.4;x+=.45)box(g,x,4.25,w*.30,.08,.12,w*.32,silver);
+
   }
   if(id==='shanghai'){
    const glass=curtain();glass.side=T.DoubleSide;
