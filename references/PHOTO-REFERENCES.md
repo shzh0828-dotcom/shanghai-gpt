@@ -14,3 +14,5 @@ Additional photo references consulted:
 - https://hpcbristol.net/visual/ro-n0172 (historical façade reference, not current geography)
 
 The model uses geometric interpretations rather than copied photo textures. Exact survey/photogrammetry fidelity is not claimed.
+
+Five-building refinement: Shanghai Tower taper and 120-degree rotation informed by https://www.gensler.com/projects/shanghai-tower and https://www.thorntontomasetti.com/project/shanghai-tower . Façade divisions and illumination are procedural approximations based on the supplied views.

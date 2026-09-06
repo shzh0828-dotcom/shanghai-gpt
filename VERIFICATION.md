@@ -18,3 +18,8 @@
 - Added rippled planar river reflections, cargo/cruise vessel variants and animated wakes.
 - Added landmark-area crossings, signals, bus shelters, benches, planters and moving pedestrians. Street furniture is illustrative rather than surveyed.
 - TypeScript and production build passed. Local browser rendered day and Customs House night views with no captured console errors. Landmark flight and lighting tools passed. Updated GLB export completed and reloaded successfully through the exporter validation. Reflective water remains browser-only.
+
+## Five-building material and lighting pass
+- Only Shanghai Tower, SWFC, Oriental Pearl, Customs House and former HSBC geometry/materials changed. Other landmarks retain their previous geometry.
+- TypeScript and production build passed. Local browser showed the rebuilt Shanghai Tower and historic façades in day and night; no captured console errors. Night selection worked using the visible control.
+- Dedicated glass panel textures, denser mullions, a tapered 120-degree tower envelope, sphere latitude/longitude detail, four illuminated clock faces and warm façade spotlights added. This remains procedural architecture, not a photogrammetric replica.
