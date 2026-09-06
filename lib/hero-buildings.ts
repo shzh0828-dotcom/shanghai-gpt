@@ -62,7 +62,7 @@ export function refineHeroBuildings(groups:Map<string,T.Group>){
   if(id==='customs'||id==='hsbc'){
    // Independent limestone finish, with fine masonry joints and a softly lit stone surface.
    const c=document.createElement('canvas');c.width=c.height=256;const a=c.getContext('2d')!;a.fillStyle='#c5b9a5';a.fillRect(0,0,256,256);for(let y=0;y<256;y+=32){a.fillStyle='#9d9587';a.fillRect(0,y,256,1);for(let x=(y/32%2)*32;x<256;x+=64)a.fillRect(x,y,1,32)}const texture=new T.CanvasTexture(c);texture.wrapS=texture.wrapT=T.RepeatWrapping;texture.repeat.set(3,2);texture.colorSpace=T.SRGBColorSpace;
-   g.traverse(o=>{if(!(o instanceof T.Mesh)||Array.isArray(o.material))return;const old=o.material as T.MeshStandardMaterial;if(old.metalness<.2&& !old.emissive?.getHex()){const m=old.clone();m.map=texture;m.bumpMap=texture;m.bumpScale=.035;m.roughness=.86;m.color.set('#e2d7c2');m.emissive.set('#eabf85');glow.push({material:m,strength:.48});o.material=m}});
+   g.traverse(o=>{if(!(o instanceof T.Mesh)||Array.isArray(o.material))return;const old=o.material as T.MeshStandardMaterial;if(old.metalness<.2&& !old.emissive?.getHex()){const m=old.clone();m.map=texture;m.bumpMap=texture;m.bumpScale=.035;m.roughness=.86;m.color.set('#e2d7c2');m.emissive.set('#eabf85');glow.push({material:m,strength:.30});o.material=m}});
    const base=h*(id==='customs'?.57:.65);
    for(let z=-d/2+1;z<d/2;z+=1.3){box(g,w/2+.12,base*.57,z,.12,base*.55,.09,metal);box(g,w/2+.18,base*.87,z,.18,.12,.8,warm)}
    if(id==='customs'){
@@ -70,7 +70,7 @@ export function refineHeroBuildings(groups:Map<string,T.Group>){
     for(let side=0;side<4;side++){const face=new T.Group();face.position.set(w*.27,h*.825,0);face.rotation.y=side*Math.PI/2;g.add(face);const disk=new T.Mesh(new T.CircleGeometry(1.38,64),dial);disk.position.z=2.49;face.add(disk);for(let tick=0;tick<60;tick++){const a=tick*Math.PI/30;const mark=box(face,Math.sin(a)*1.18,Math.cos(a)*1.18,2.505,tick%5===0?.055:.025,tick%5===0?.18:.075,.018,dark);mark.rotation.z=-a}box(face,0,.4,2.53,.055,.85,.025,dark);const hand=box(face,.35,.1,2.54,.74,.065,.025,dark);hand.rotation.z=.28;}
    }
    if(id==='customs'){
-    const stone=new T.MeshStandardMaterial({color:'#c2b6a1',roughness:.85,emissive:'#ffc47b',emissiveIntensity:0});glow.push({material:stone,strength:.4});
+    const stone=new T.MeshStandardMaterial({color:'#c2b6a1',roughness:.85,emissive:'#ffc47b',emissiveIntensity:0});glow.push({material:stone,strength:.27});
     const tx=w*.27;
     // Four-sided belfry, tall recessed windows and projecting stone trim.
     for(let side=0;side<4;side++){const face=new T.Group();face.position.x=tx;face.rotation.y=side*Math.PI/2;g.add(face);
@@ -89,7 +89,7 @@ export function refineHeroBuildings(groups:Map<string,T.Group>){
     cylinder(g,tx,h+1.7,0,.035,2.4,metal);const flag=new T.Mesh(new T.PlaneGeometry(.95,.6),new T.MeshStandardMaterial({color:'#c62b25',side:T.DoubleSide,roughness:.8}));flag.position.set(tx+.48,h+2.35,0);g.add(flag);
    }
    if(id==='hsbc'){
-    const stone=new T.MeshStandardMaterial({color:'#c7bba5',roughness:.83,emissive:'#ffd398',emissiveIntensity:0});glow.push({material:stone,strength:.38});
+    const stone=new T.MeshStandardMaterial({color:'#c7bba5',roughness:.83,emissive:'#ffd398',emissiveIntensity:0});glow.push({material:stone,strength:.26});
     const tx=w*.2;
     // Raised drum with paired pilasters, recessed openings, and projecting entablature.
     for(let k=0;k<16;k++){const a=k*Math.PI/8,x=tx+Math.cos(a)*4.55,z=Math.sin(a)*4.55;cylinder(g,x,h*.78,z,.12,2,stone);const window=box(g,tx+Math.cos(a)*4.49,h*.77,Math.sin(a)*4.49,.46,1.1,.09,dark);window.rotation.y=Math.PI/2-a;}
@@ -107,5 +107,5 @@ export function refineHeroBuildings(groups:Map<string,T.Group>){
   }
   g.traverse(o=>{o.userData.landmark=id;if(o instanceof T.Mesh){o.castShadow=true;o.receiveShadow=true}});
  }
- return {update(night:number){const n=Math.min(1,Math.max(0,night));glow.forEach(v=>v.material.emissiveIntensity=v.strength*n);lights.forEach(l=>l.intensity=120*n)}};
+ return {update(night:number){const n=Math.min(1,Math.max(0,night));glow.forEach(v=>v.material.emissiveIntensity=v.strength*n);lights.forEach(l=>l.intensity=78*n)}};
 }
