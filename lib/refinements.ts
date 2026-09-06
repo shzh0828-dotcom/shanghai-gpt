@@ -1,3 +1,4 @@
+import { clearWalkingPath } from './walkable';
 import * as T from 'three';
 import { Reflector } from 'three/addons/objects/Reflector.js';
 import mapData from './map-data.json';
@@ -95,7 +96,7 @@ export function addRefinements(world:T.Group,scene:T.Scene,groups:Map<string,T.G
   if(busStops<20&&crossingCount%3===0){const b=new T.Group();b.name='Bus shelter';b.position.set(width/2+2,0,7);g.add(b);box(b,0,1.8,0,1.3,.12,3.5,steel);box(b,.55,.9,0,.08,1.8,3.3,unlitWindow);box(b,0,.55,0,.55,.12,2.5,limestone);for(const zz of [-1.5,1.5])box(b,-.5,.9,zz,.06,1.8,.06,steel);box(b,.5,1.8,2,.1,.9,.6,amber);busStops++}
  }
  const clothes=[bronze,red,steel,unlitWindow,white];
- for(const r of mapData.roads.filter(r=>['footway','pedestrian'].includes(r.kind)&&r.points.length>=2&&r.points.some(near)).sort((a,b)=>Math.min(...a.points.map(p=>p[1]))-Math.min(...b.points.map(p=>p[1]))).filter((_,i)=>i%2===0).slice(0,160)){
+ for(const r of mapData.roads.filter(r=>['footway','pedestrian'].includes(r.kind)&&r.points.length>=2&&!r.bridge&&r.points.some(near)&&clearWalkingPath(r.points)).sort((a,b)=>Math.min(...a.points.map(p=>p[1]))-Math.min(...b.points.map(p=>p[1]))).filter((_,i)=>i%2===0).slice(0,160)){
   const points=r.points.map(p=>new T.Vector3(p[0],.34,p[1]));const pathIndex=pedestrianPaths.push(points)-1;
   for(let i=0;i<3;i++){const g=new T.Group();g.name='Pedestrian';box(g,0,.2,0,.11,.24,.08,clothes[(pathIndex+i)%5]);sphere(g,0,.39,0,.065,limestone);for(const x of [-.035,.035])box(g,x,.065,0,.035,.13,.04,unlitWindow);g.userData.pathIndex=pathIndex;g.userData.phase=i/3;g.userData.length=points.slice(1).reduce((n,p,j)=>n+p.distanceTo(points[j]),0);world.add(g);pedestrians.push(g)}
   // Occasional benches and planters on the edge of the pedestrian path.

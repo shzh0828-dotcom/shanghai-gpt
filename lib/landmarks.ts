@@ -1,3 +1,4 @@
+import verifiedPositions from './verified-positions.json';
 import mapData from './map-data.json';
 export type Landmark = { id:string; name:string; zh:string; category:string; x:number; z:number; h:number; w:number; d:number; kind:string; description:string; source:string; address:string };
 const bund='https://english.shanghai.gov.cn/en-ScenicSpots/20231205/584672cc6d044eabb5f7f6fc9049a19f.html';
@@ -28,6 +29,9 @@ export const landmarks:Landmark[]=[
 {id:'club',name:'Shanghai Club Building',zh:'上海总会大楼',category:'Heritage',x:-75,z:91,h:11,w:21,d:17,kind:'classic',description:'A richly detailed historic building on the southern stretch of the Bund, now part of the Waldorf Astoria hotel complex.',source:bund,address:'2 Zhongshan East 1st Road · Puxi'},
 ];
 for (const l of landmarks) {if(l.id==='peace')l.h=17;if(l.id==='hsbc')l.h=13.2;const location=(mapData.locations as Record<string,{x:number;z:number}>)[l.id];if(location){l.x=location.x;l.z=location.z;}}
+for(const l of landmarks){const p=(verifiedPositions as Record<string,{x:number;z:number}>)[l.id];if(p){l.x=p.x;l.z=p.z;}}
 // Preserve both detailed models while leaving a narrow lane between their outer cornices.
 landmarks.find(l=>l.id==='hsbc')!.z += 6.5;
+// Limit footprint adjustments to five percent; preserve all building heights.
+for(const l of landmarks){if(['swfc','boc','rockbund','bund18','customs','hsbc'].includes(l.id)){l.w*=.95;l.d*=.95;}}
 export const categories=['All','Heritage','Skyline','Culture','Shopping'];
